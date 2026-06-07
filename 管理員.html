@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent TT 旅遊平台 - 管理員後台系統</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #F3F4F6;
+        }
+
+        /* 去趣 chicTrip 風格調色盤定義 */
+        .brand-blue {
+            color: #1E40AF;
+        }
+
+        .bg-brand-blue {
+            background-color: #1E40AF;
+        }
+
+        .bg-brand-blue-hover {
+            background-color: #1D4ED8;
+        }
+
+        .brand-yellow {
+            color: #FCD34D;
+        }
+
+        .bg-brand-yellow {
+            background-color: #FCD34D;
+        }
+
+        .bg-brand-yellow-hover {
+            background-color: #FBBF24;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+    </style>
+</head>
+
+<body class="flex h-screen overflow-hidden">
+
+    <!-- 側邊欄改為亮色系品牌風格 -->
+    <aside class="w-64 bg-white border-r border-gray-200 flex flex-col justify-between shrink-0 shadow-sm z-20">
+        <div>
+            <div class="p-5 border-b border-gray-100 flex items-center space-x-3">
+                <div
+                    class="w-10 h-10 bg-brand-blue rounded-xl flex items-center justify-center shadow-md shadow-blue-200">
+                    <i class="fa-solid fa-screwdriver-wrench brand-yellow text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wider text-blue-900">Agent <span
+                            class="text-amber-500">TT</span></h1>
+                    <p class="text-[10px] text-gray-500 font-medium">後台管理控制系統</p>
+                </div>
+            </div>
+            <nav class="p-4 space-y-1">
+                <button onclick="switchTab('hotel-mgmt')" id="tab-hotel-mgmt"
+                    class="nav-btn w-full flex items-center space-x-3 px-4 py-3.5 rounded-xl text-sm font-medium transition bg-brand-blue text-white shadow-md shadow-blue-100">
+                    <i class="fa-solid fa-hotel text-lg w-6 text-center"></i><span>房源上架與管理</span>
+                </button>
+                <button onclick="switchTab('price-mgmt')" id="tab-price-mgmt"
+                    class="nav-btn w-full flex items-center space-x-3 px-4 py-3.5 rounded-xl text-sm font-medium transition text-gray-600 hover:bg-gray-50">
+                    <i class="fa-solid fa-tags text-lg w-6 text-center"></i><span>訂價與折扣管理</span>
+                </button>
+                <button onclick="switchTab('order-mgmt')" id="tab-order-mgmt"
+                    class="nav-btn w-full flex items-center space-x-3 px-4 py-3.5 rounded-xl text-sm font-medium transition text-gray-600 hover:bg-gray-50">
+                    <i class="fa-solid fa-clipboard-list text-lg w-6 text-center"></i><span>訂單與顧客互動</span>
+                </button>
+            </nav>
+        </div>
+        <div class="p-4 border-t border-gray-100 bg-gray-50 flex items-center space-x-3 justify-between">
+            <div class="flex items-center space-x-3 overflow-hidden">
+                <div
+                    class="w-10 h-10 rounded-full bg-brand-blue flex items-center justify-center text-white font-bold text-sm shadow-md shadow-blue-200 shrink-0">
+                    M
+                </div>
+                <div class="overflow-hidden">
+                    <h4 class="text-sm font-bold text-gray-800 truncate">最高管理員 (Guo)</h4>
+                    <p class="text-[10px] text-emerald-500 font-bold flex items-center mt-0.5"><span
+                            class="w-1.5 h-1.5 bg-emerald-500 rounded-full inline-block mr-1 animate-pulse"></span>系統連線中
+                    </p>
+                </div>
+            </div>
+            <button onclick="adminLogout()"
+                class="shrink-0 bg-red-50 text-red-600 hover:bg-red-100 border border-red-100 p-2 rounded-xl text-xs font-bold transition cursor-pointer"
+                title="登出系統">
+                <i class="fa-solid fa-right-from-bracket"></i>
+            </button>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col overflow-hidden bg-gray-50">
+        <header
+            class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8 z-10 shrink-0 shadow-sm">
+            <div class="flex items-center space-x-2">
+                <span class="text-sm font-medium text-gray-400">目前專案 /</span>
+                <span id="current-title" class="text-sm font-bold text-gray-800">房源上架與管理流程</span>
+            </div>
+            <div class="text-xs text-gray-500 font-medium bg-gray-100 px-3 py-1.5 rounded-lg border border-gray-200">
+                系統時間：2026-06-05</div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-8 no-scrollbar">
+
+            <!-- Section: 房源管理 -->
+            <section id="sec-hotel-mgmt" class="space-y-6 animate-fade-in">
+                <div
+                    class="flex justify-between items-center bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                    <div>
+                        <h2 class="text-lg font-bold text-gray-800">房源資料建立與上架</h2>
+                        <p class="text-xs text-gray-400 mt-1">負責填寫基本資料、設定房型、設備及上架前完整度檢查。</p>
+                    </div>
+                    <button onclick="validateAndUploadHotel()"
+                        class="bg-brand-blue hover:bg-brand-blue-hover text-white font-bold text-sm px-5 py-2.5 rounded-xl transition shadow-md shadow-blue-100 cursor-pointer flex items-center">
+                        <i class="fa-solid fa-cloud-arrow-up mr-2"></i>檢查並發布上架
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-3 gap-6">
+                    <div class="col-span-2 space-y-6">
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-5">
+                            <h3 class="text-sm font-bold text-gray-800 flex items-center"><i
+                                    class="fa-solid fa-file-invoice text-brand-blue mr-2"></i>步驟 1：房源基本資料</h3>
+                            <div class="grid grid-cols-2 gap-5">
+                                <div class="space-y-2">
+                                    <label class="text-xs font-bold text-gray-600">房源名稱 <span
+                                            class="text-rose-500">*</span></label>
+                                    <input type="text" id="form-hotel-name" value="墾丁微風海景包棟民宿"
+                                        class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="text-xs font-bold text-gray-600">縣市地區 <span
+                                            class="text-rose-500">*</span></label>
+                                    <select id="form-hotel-region"
+                                        class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition cursor-pointer">
+                                        <option value="屏東縣" selected>屏東縣</option>
+                                        <option value="高雄市">高雄市</option>
+                                        <option value="台南市">台南市</option>
+                                    </select>
+                                </div>
+                                <div class="col-span-2 space-y-2">
+                                    <label class="text-xs font-bold text-gray-600">詳細地址 <span
+                                            class="text-rose-500">*</span></label>
+                                    <input type="text" id="form-hotel-address" placeholder="例：屏東縣恆春鎮白沙路 1 號"
+                                        class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                                </div>
+                                <div class="col-span-2 space-y-2">
+                                    <label class="text-xs font-bold text-gray-600">房源描述 <span
+                                            class="text-rose-500">*</span></label>
+                                    <textarea id="form-hotel-desc" rows="2"
+                                        class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition">坐落於白沙灣旁，擁有絕美私人無邊際泳池，適合家族聚會與朋友派對包棟。</textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-5">
+                            <h3 class="text-sm font-bold text-gray-800 flex items-center"><i
+                                    class="fa-solid fa-bed text-brand-blue mr-2"></i>步驟 2：房型與入住規範設定</h3>
+                            <div class="grid grid-cols-4 gap-5">
+                                <div class="space-y-2">
+                                    <label class="text-xs font-bold text-gray-600">房型種類 <span
+                                            class="text-rose-500">*</span></label>
+                                    <input type="text" id="form-room-type" value="豪華海景包棟"
+                                        class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="text-xs font-bold text-gray-600">可入住人數</label>
+                                    <input type="number" id="form-room-max" value="12"
+                                        class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="text-xs font-bold text-gray-600">剩餘空房數 <span
+                                            class="text-rose-500">*</span></label>
+                                    <input type="number" id="form-room-stock" value="5" min="0"
+                                        class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="text-xs font-bold text-gray-600">入住時間 (Check-in)</label>
+                                    <input type="text" id="form-checkin" value="15:00"
+                                        class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                                </div>
+                                <div class="col-span-2 space-y-2">
+                                    <label class="text-xs font-bold text-gray-600">退房時間 (Check-out)</label>
+                                    <input type="text" id="form-checkout" value="11:00"
+                                        class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 步驟 3：房間價格設定 -->
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-5">
+                            <h3 class="text-sm font-bold text-gray-800 flex items-center"><i
+                                    class="fa-solid fa-tag text-brand-blue mr-2"></i>步驟 3：房間價格設定</h3>
+                            <div class="grid grid-cols-3 gap-5">
+                                <div class="space-y-2">
+                                    <label class="text-xs font-bold text-gray-600">平日基本價 (每晚) <span
+                                            class="text-rose-500">*</span></label>
+                                    <div class="relative">
+                                        <span
+                                            class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-bold">$</span>
+                                        <input type="number" id="form-price-weekday" value="4500" min="0"
+                                            class="w-full bg-gray-50 border border-gray-200 rounded-xl pl-7 pr-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                                    </div>
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="text-xs font-bold text-gray-600">假日價格 (每晚)</label>
+                                    <div class="relative">
+                                        <span
+                                            class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-bold">$</span>
+                                        <input type="number" id="form-price-weekend" value="6000" min="0"
+                                            class="w-full bg-gray-50 border border-gray-200 rounded-xl pl-7 pr-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                                    </div>
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="text-xs font-bold text-gray-600">特殊節日價格 (每晚)</label>
+                                    <div class="relative">
+                                        <span
+                                            class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-bold">$</span>
+                                        <input type="number" id="form-price-holiday" value="8000" min="0"
+                                            class="w-full bg-gray-50 border border-gray-200 rounded-xl pl-7 pr-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-xs text-gray-400 flex items-center"><i
+                                    class="fa-solid fa-circle-info text-blue-400 mr-1.5"></i>平日基本價將作為前端搜尋頁的顯示起始價格。</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-6">
+                        <!-- 步驟 4：房間圖片上傳 -->
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4">
+                            <h3 class="text-sm font-bold text-gray-800 flex items-center"><i
+                                    class="fa-solid fa-images text-brand-blue mr-2"></i>步驟 4：房間圖片上傳</h3>
+                            <!-- 上傳區 -->
+                            <label id="img-upload-label" for="form-hotel-images"
+                                class="flex flex-col items-center justify-center w-full h-36 border-2 border-dashed border-blue-200 rounded-2xl bg-blue-50/40 hover:bg-blue-50 cursor-pointer transition group">
+                                <i
+                                    class="fa-solid fa-cloud-arrow-up text-3xl text-blue-300 group-hover:text-blue-400 transition mb-2"></i>
+                                <span class="text-xs font-bold text-blue-400">點擊或拖曳上傳圖片</span>
+                                <span class="text-[10px] text-gray-400 mt-1">支援 JPG、PNG、WEBP（最多 5 張）</span>
+                                <input type="file" id="form-hotel-images" accept="image/*" multiple class="hidden"
+                                    onchange="previewUploadedImages(event)">
+                            </label>
+                            <!-- 預覽縮圖列 -->
+                            <div id="img-preview-list" class="flex flex-wrap gap-2"></div>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-5">
+                            <h3 class="text-sm font-bold text-gray-800 flex items-center"><i
+                                    class="fa-solid fa-shield-halved text-brand-blue mr-2"></i>步驟 5：設備與取消規則</h3>
+                            <div class="space-y-3">
+                                <label class="text-xs font-bold text-gray-600 block">提供設備服務</label>
+                                <div class="grid grid-cols-2 gap-3 text-sm font-medium text-gray-700">
+                                    <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox"
+                                            checked class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"> <span>免費
+                                            Wi-Fi</span></label>
+                                    <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox"
+                                            checked class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
+                                        <span>私人泳池</span></label>
+                                    <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox"
+                                            checked class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
+                                        <span>免費停車位</span></label>
+                                    <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox"
+                                            class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
+                                        <span>允許攜帶寵物</span></label>
+                                </div>
+                            </div>
+                            <div class="space-y-2 pt-4">
+                                <label class="text-xs font-bold text-gray-600">取消訂房政策</label>
+                                <select id="form-policy"
+                                    class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition cursor-pointer">
+                                    <option value="strict">嚴格 (入住前 7 天取消全額退款，之後不退)</option>
+                                    <option value="flexible">彈性 (入住前 24 小時前取消全額退款)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <h3 class="text-sm font-bold text-gray-800 mb-4 border-b border-gray-100 pb-2">線上現有房源維護清單</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 text-gray-600">
+                                    <th class="p-3 font-bold rounded-tl-xl">房源名稱</th>
+                                    <th class="p-3 font-bold">地址</th>
+                                    <th class="p-3 font-bold">房型/人數</th>
+                                    <th class="p-3 font-bold">入住時間</th>
+                                    <th class="p-3 font-bold">每晚起</th>
+                                    <th class="p-3 font-bold">空房</th>
+                                    <th class="p-3 font-bold">圖片</th>
+                                    <th class="p-3 font-bold">狀態</th>
+                                    <th class="p-3 font-bold rounded-tr-xl">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="hotel-list-table">
+                                <tr class="border-b border-gray-100 hover:bg-blue-50/50 transition">
+                                    <td class="p-3 font-bold text-gray-800">墾丁微風海景包棟民宿</td>
+                                    <td class="p-3 text-gray-500 text-xs">屏東縣恆春鎮</td>
+                                    <td class="p-3 text-gray-500">豪華海景包棟 / 12人</td>
+                                    <td class="p-3 text-gray-500">15:00-20:00</td>
+                                    <td class="p-3 font-bold text-blue-700">$4,500</td>
+                                    <td class="p-3"><span class="font-bold text-gray-700">5 間</span></td>
+                                    <td class="p-3"><img
+                                            src="https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=60&h=40&q=80"
+                                            class="w-14 h-10 object-cover rounded-lg border border-gray-100" alt="房源圖">
+                                    </td>
+                                    <td class="p-3"><span
+                                            class="bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full text-xs font-bold">已上架供應中</span>
+                                    </td>
+                                    <td class="p-3"><button
+                                            class="text-blue-600 font-bold hover:underline cursor-pointer">編輯維護</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section: 訂價管理 -->
+            <section id="sec-price-mgmt" class="hidden space-y-6 animate-fade-in">
+                <div class="grid grid-cols-3 gap-6">
+                    <div class="col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-6">
+                        <h3 class="text-sm font-bold text-gray-800 border-b border-gray-100 pb-3 flex items-center"><i
+                                class="fa-solid fa-calculator text-amber-500 mr-2 text-lg"></i>基礎房價與折扣規則制定</h3>
+
+                        <div class="grid grid-cols-3 gap-5">
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold text-gray-600">平日基本價 (每晚)</label>
+                                <input type="number" id="price-weekday" value="8000" oninput="calculatePreviewPrice()"
+                                    class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 transition">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold text-gray-600">假日價格 (每晚)</label>
+                                <input type="number" id="price-weekend" value="12000" oninput="calculatePreviewPrice()"
+                                    class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 transition">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold text-gray-600">特殊節日價格 (每晚)</label>
+                                <input type="number" id="price-holiday" value="16000" oninput="calculatePreviewPrice()"
+                                    class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 transition">
+                            </div>
+                        </div>
+
+                        <div class="p-5 bg-gray-50 border border-gray-100 rounded-2xl space-y-5">
+                            <h4 class="text-sm font-bold text-gray-800 flex items-center"><i
+                                    class="fa-solid fa-percent text-blue-600 mr-2"></i>配置行銷優惠折扣方案</h4>
+                            <div class="grid grid-cols-2 gap-5">
+                                <div class="space-y-2">
+                                    <label class="text-xs font-bold text-gray-600">方案類型選擇</label>
+                                    <select id="discount-type" onchange="calculatePreviewPrice()"
+                                        class="w-full bg-white border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                                        <option value="early">早鳥專案 (打 85 折)</option>
+                                        <option value="member">尊榮黃金會員 (現折 1000 元)</option>
+                                        <option value="none">無套用優惠</option>
+                                    </select>
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="text-xs font-bold text-gray-600">最低消費門檻限制</label>
+                                    <input type="number" id="discount-min-spend" value="5000"
+                                        class="w-full bg-white border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                </div>
+                            </div>
+                            <div class="text-xs text-gray-500 font-medium flex items-start">
+                                <i class="fa-solid fa-circle-info text-blue-500 mt-0.5 mr-1.5"></i>
+                                <span>系統限制：必須滿足適用日期區間、會員等級與最低消費金額門檻，系統方進行自動最終價格折抵。</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
+                        <div class="space-y-5">
+                            <h3 class="text-sm font-bold text-gray-800 border-b border-gray-100 pb-3 flex items-center">
+                                <i class="fa-solid fa-receipt text-gray-500 mr-2 text-lg"></i>系統試算最終價格明細
+                            </h3>
+                            <div class="space-y-3 text-sm">
+                                <div
+                                    class="flex justify-between text-gray-500 bg-gray-50 p-2.5 rounded-lg border border-gray-100">
+                                    <span>預設環境基準：</span><span class="font-bold text-gray-800">平日入住 1 晚</span>
+                                </div>
+                                <div class="flex justify-between text-gray-600 px-1"><span>基礎定價：</span><span
+                                        id="detail-base" class="font-bold">$8,000</span></div>
+                                <div class="flex justify-between text-rose-500 px-1 font-medium">
+                                    <span>適用優惠折扣折抵：</span><span id="detail-minus">-$1,200</span>
+                                </div>
+                                <hr class="border-dashed border-gray-200 my-3">
+                                <div class="flex justify-between items-center pt-2 px-1">
+                                    <span class="font-bold text-gray-800 text-sm">自動計價應付總額：</span>
+                                    <span id="detail-total" class="text-2xl font-black text-brand-blue">$6,800</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-8 space-y-3">
+                            <button onclick="savePriceConfiguration(true)"
+                                class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm py-3 rounded-xl transition shadow-md cursor-pointer flex justify-center items-center">
+                                <i class="fa-solid fa-square-check mr-2"></i>確認價格正確，保存方案
+                            </button>
+                            <button onclick="savePriceConfiguration(false)"
+                                class="w-full bg-white border border-gray-200 hover:bg-gray-50 text-gray-600 font-bold text-sm py-3 rounded-xl transition cursor-pointer">
+                                價格不正確，重新調整設定
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section: 訂單管理 -->
+            <section id="sec-order-mgmt" class="hidden space-y-6 animate-fade-in">
+                <div class="grid grid-cols-3 gap-5">
+                    <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center space-x-4">
+                        <div class="bg-blue-100 p-4 rounded-xl text-brand-blue"><i
+                                class="fa-solid fa-clipboard-list text-xl"></i></div>
+                        <div>
+                            <h5 class="text-xs font-bold text-gray-400 mb-0.5">總預訂訂單數</h5>
+                            <p id="stat-total-bookings" class="text-2xl font-black text-gray-800">0 筆</p>
+                        </div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center space-x-4">
+                        <div class="bg-emerald-100 p-4 rounded-xl text-emerald-600"><i
+                                class="fa-solid fa-calendar-check text-xl"></i></div>
+                        <div>
+                            <h5 class="text-xs font-bold text-gray-400 mb-0.5">待入住預訂</h5>
+                            <p id="stat-upcoming-bookings" class="text-2xl font-black text-gray-800">0 筆</p>
+                        </div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center space-x-4">
+                        <div class="bg-amber-100 p-4 rounded-xl text-amber-600"><i
+                                class="fa-solid fa-check-double text-xl"></i></div>
+                        <div>
+                            <h5 class="text-xs font-bold text-gray-400 mb-0.5">已完成預訂</h5>
+                            <p id="stat-completed-bookings" class="text-2xl font-black text-gray-800">0 筆</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-6">
+                    <div class="col-span-2 space-y-6">
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                            <h3
+                                class="text-sm font-bold text-gray-800 mb-4 flex items-center border-b border-gray-100 pb-3">
+                                <i class="fa-solid fa-receipt text-brand-blue mr-2 text-lg"></i>顧客訂單及取消審核中心
+                            </h3>
+                            <div class="border border-amber-200 bg-amber-50 rounded-xl p-5 space-y-4">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <div class="flex items-center space-x-2">
+                                            <span class="text-sm font-bold text-gray-800">訂單編號 #TRP-20260601</span>
+                                            <span
+                                                class="bg-amber-200 text-amber-800 px-2.5 py-1 rounded-full text-[10px] font-bold">顧客申請取消訂單</span>
+                                        </div>
+                                        <p class="text-xs text-gray-500 mt-2 font-medium">房源：墾丁微風海景包棟民宿 • 訂購金額：$6,800
+                                        </p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-xs text-gray-400 font-medium">取消時間：入住前 3 天</p>
+                                        <p class="text-sm font-bold text-rose-600 mt-1">系統試算退款(50%)：$3,400</p>
+                                    </div>
+                                </div>
+                                <div
+                                    class="text-xs text-gray-600 bg-white p-3.5 rounded-xl border border-amber-100 shadow-sm">
+                                    <i
+                                        class="fa-solid fa-triangle-exclamation text-amber-500 mr-1.5 text-sm"></i><strong>政策警示：</strong>該顧客因行程臨時有變故而取消，依嚴格退款政策計算為
+                                    50%，可能引發顧客不滿。若有爭議，建議啟用右側即時聊天管道確認。
+                                </div>
+                                <div class="flex space-x-3 justify-end pt-2">
+                                    <button onclick="openChatWithCustomer()"
+                                        class="bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 font-bold text-xs px-4 py-2.5 rounded-xl transition cursor-pointer flex items-center shadow-sm">
+                                        <i class="fa-solid fa-comments text-brand-blue mr-2"></i>開啟即時溝通
+                                    </button>
+                                    <button onclick="approveRefundPolicy(true)"
+                                        class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition shadow-md shadow-emerald-100 cursor-pointer">
+                                        符合退款規定，核准自動退款
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- 所有旅客預訂明細 -->
+                            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4">
+                                <h3
+                                    class="text-sm font-bold text-gray-800 mb-4 flex items-center border-b border-gray-100 pb-3">
+                                    <i class="fa-solid fa-hotel text-brand-blue mr-2 text-lg"></i>所有旅客預訂明細
+                                </h3>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left text-sm border-collapse whitespace-nowrap">
+                                        <thead>
+                                            <tr class="bg-gray-50 text-gray-600">
+                                                <th class="p-3 font-bold rounded-tl-xl">訂單編號</th>
+                                                <th class="p-3 font-bold">旅客姓名</th>
+                                                <th class="p-3 font-bold">預訂房源</th>
+                                                <th class="p-3 font-bold">入住 / 退房</th>
+                                                <th class="p-3 font-bold">人數 / 房型</th>
+                                                <th class="p-3 font-bold">金額</th>
+                                                <th class="p-3 font-bold rounded-tr-xl">狀態</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="admin-booking-list-table">
+                                            <!-- 動態渲染 bookings -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4">
+                                <h3
+                                    class="text-sm font-bold text-gray-800 flex items-center border-b border-gray-100 pb-3">
+                                    <i class="fa-solid fa-comment-dots text-purple-600 mr-2 text-lg"></i>旅客住宿體驗回饋與評價回覆
+                                </h3>
+
+                                <div class="border border-gray-100 rounded-xl p-5 space-y-4 bg-gray-50">
+                                    <div class="flex justify-between items-center">
+                                        <div class="flex items-center space-x-3">
+                                            <div
+                                                class="w-8 h-8 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center font-bold text-xs">
+                                                郭</div>
+                                            <span class="font-bold text-sm text-gray-800">旅客 郭佳瑜</span>
+                                            <div class="text-brand-yellow text-xs"><i class="fa-solid fa-star"></i><i
+                                                    class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                                                    class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
+                                        </div>
+                                        <span class="text-xs text-gray-400 font-medium">住宿日期：2026-05</span>
+                                    </div>
+                                    <p class="text-sm text-gray-600 leading-relaxed">
+                                        環境超級乾淨！私人海景無邊際泳池拍照非常漂亮，非常適合大群朋友包棟聚會，下次一定還會再來預訂！</p>
+
+                                    <div id="reply-box-container" class="space-y-3 pt-4 border-t border-gray-200">
+                                        <label class="text-xs font-bold text-gray-500 block">管理員官方回覆：</label>
+                                        <textarea id="admin-reply-text" rows="2" placeholder="撰寫回覆內容以維護良好顧客關係..."
+                                            class="w-full bg-white border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"></textarea>
+                                        <div class="flex justify-end">
+                                            <button onclick="submitAdminReply()"
+                                                class="bg-gray-800 hover:bg-gray-900 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition cursor-pointer shadow-md">送出官方回覆</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 即時通訊區塊 -->
+                        <div
+                            class="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col overflow-hidden h-[500px]">
+                            <div class="bg-brand-blue p-4 text-white flex items-center space-x-2 shrink-0 shadow-sm">
+                                <div class="w-2.5 h-2.5 bg-gray-300 rounded-full" id="chat-status-dot"></div>
+                                <span class="font-bold text-sm" id="chat-title-name">即時通訊服務 (未開啟)</span>
+                            </div>
+                            <div class="flex-1 p-5 overflow-y-auto space-y-4 bg-gray-50 text-sm no-scrollbar"
+                                id="chat-message-window">
+                                <div class="text-center text-xs text-gray-400 my-4 font-medium">請點擊左側「開啟即時溝通」按鈕連線</div>
+                            </div>
+                            <div class="p-3 border-t border-gray-100 bg-white flex space-x-2 shrink-0">
+                                <input type="text" id="chat-input" disabled placeholder="連線後即可輸入訊息..."
+                                    class="flex-1 bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                                <button onclick="sendChatMessage()" id="chat-send-btn" disabled
+                                    class="bg-brand-blue text-white px-4 rounded-xl text-sm font-bold opacity-50 cursor-not-allowed"><i
+                                        class="fa-solid fa-paper-plane"></i></button>
+                            </div>
+                        </div>
+                    </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- 提示訊息 -->
+    <div id="toast-alert"
+        class="hidden fixed bottom-6 right-6 bg-white border border-gray-100 text-gray-700 px-6 py-4 rounded-2xl shadow-xl flex items-center space-x-3 text-sm font-bold transition-all duration-300 transform translate-y-10 opacity-0 z-50">
+        <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-500 text-xl"></i>
+        <span id="toast-msg">提示訊息</span>
+    </div>
+
+    <script>
+        // 頁籤切換控制
+        function switchTab(tabId) {
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.className = "nav-btn w-full flex items-center space-x-3 px-4 py-3.5 rounded-xl text-sm font-medium transition text-gray-600 hover:bg-gray-50";
+            });
+
+            const currentBtn = document.getElementById(`tab-${tabId}`);
+            currentBtn.className = "nav-btn w-full flex items-center space-x-3 px-4 py-3.5 rounded-xl text-sm font-medium transition bg-brand-blue text-white shadow-md shadow-blue-100";
+
+            document.getElementById('sec-hotel-mgmt').classList.add('hidden');
+            document.getElementById('sec-price-mgmt').classList.add('hidden');
+            document.getElementById('sec-order-mgmt').classList.add('hidden');
+
+            if (tabId === 'hotel-mgmt') {
+                document.getElementById('sec-hotel-mgmt').classList.remove('hidden');
+                document.getElementById('current-title').innerText = "房源上架與管理流程";
+            } else if (tabId === 'price-mgmt') {
+                document.getElementById('sec-price-mgmt').classList.remove('hidden');
+                document.getElementById('current-title').innerText = "訂價與折扣管理流程";
+                calculatePreviewPrice();
+            } else if (tabId === 'order-mgmt') {
+                document.getElementById('sec-order-mgmt').classList.remove('hidden');
+                document.getElementById('current-title').innerText = "訂單管理與顧客互動流程";
+                renderAdminBookings();
+            }
+        }
+
+        // ==================== 🚀 加強版：渲染顧客預訂訂單與統計資料 ====================
+        function renderAdminBookings() {
+            const rawState = localStorage.getItem('agentTT_appState');
+            if (!rawState) return;
+
+            const appState = JSON.parse(rawState);
+            const bookings = appState.myBookings || [];
+
+            // 更新上方的統計數據
+            const totalCount = bookings.length;
+            const upcomingCount = bookings.filter(b => b.status === 'upcoming').length;
+            const completedCount = bookings.filter(b => b.status === 'completed').length;
+
+            const statTotal = document.getElementById('stat-total-bookings');
+            const statUpcoming = document.getElementById('stat-upcoming-bookings');
+            const statCompleted = document.getElementById('stat-completed-bookings');
+
+            if (statTotal) statTotal.innerText = `${totalCount} 筆`;
+            if (statUpcoming) statUpcoming.innerText = `${upcomingCount} 筆`;
+            if (statCompleted) statCompleted.innerText = `${completedCount} 筆`;
+
+            // 更新預訂明細表格
+            const tableBody = document.getElementById('admin-booking-list-table');
+            if (!tableBody) return;
+
+            tableBody.innerHTML = '';
+
+            if (bookings.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="p-8 text-center text-gray-400 italic">
+                            目前尚無任何旅客預訂訂單
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            bookings.forEach(booking => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-gray-100 hover:bg-blue-50/50 transition whitespace-nowrap";
+
+                const isCompleted = booking.status === 'completed';
+                const statusBadge = isCompleted
+                    ? `<span class="bg-gray-100 text-gray-500 px-2.5 py-1 rounded-full text-xs font-bold">已完成離房</span>`
+                    : `<span class="bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full text-xs font-bold">已付款/待入住</span>`;
+
+                tr.innerHTML = `
+                    <td class="p-3 font-mono text-xs text-gray-600">${booking.id}</td>
+                    <td class="p-3 font-bold text-gray-800">${booking.user || '郭佳瑜'}</td>
+                    <td class="p-3 font-semibold text-blue-900">${booking.hotelName}</td>
+                    <td class="p-3 text-xs text-gray-600">${booking.checkIn} 至 ${booking.checkOut}</td>
+                    <td class="p-3 text-xs text-gray-600">${booking.roomType} / ${booking.guests}人</td>
+                    <td class="p-3 font-bold text-emerald-600">$${booking.totalPrice.toLocaleString()}</td>
+                    <td class="p-3">${statusBadge}</td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+
+        // 核心通知 UI 控制
+        function alertNotification(msg, isSuccess = true) {
+            const toast = document.getElementById('toast-alert');
+            const icon = document.getElementById('toast-icon');
+            const message = document.getElementById('toast-msg');
+
+            message.innerText = msg;
+            icon.className = isSuccess ? "fa-solid fa-circle-check text-emerald-500 text-xl" : "fa-solid fa-triangle-exclamation text-amber-500 text-xl";
+
+            toast.classList.remove('hidden');
+            setTimeout(() => { toast.classList.remove('translate-y-10', 'opacity-0'); }, 50);
+            setTimeout(() => {
+                toast.classList.add('translate-y-10', 'opacity-0');
+                setTimeout(() => { toast.classList.add('hidden'); }, 300);
+            }, 4000);
+        }
+
+        // ==================== 流程一邏輯 ====================
+        // ==================== 🚀 新增：登出系統功能 ====================
+        function adminLogout() {
+            // 1. 清除瀏覽器記憶的登入狀態
+            let stateRaw = localStorage.getItem('agentTT_appState');
+            if (stateRaw) {
+                let state = JSON.parse(stateRaw);
+                state.isLoggedIn = false;
+                state.currentUser = null;
+                localStorage.setItem('agentTT_appState', JSON.stringify(state));
+            }
+            // 2. 跳轉回第一版網頁
+            alert("已安全登出管理員系統！");
+            window.location.href = '第一版.html';
+        }
+
+        // ==================== 🚀 加強版：流程一邏輯 (資料互通 + 價格 + 圖片) ====================
+
+        // 儲存上傳圖片的 base64 列表
+        let _uploadedImageDataURLs = [];
+
+        function previewUploadedImages(event) {
+            const files = Array.from(event.target.files).slice(0, 5); // 最多 5 張
+            const previewList = document.getElementById('img-preview-list');
+            _uploadedImageDataURLs = [];
+            previewList.innerHTML = '';
+
+            if (files.length === 0) return;
+
+            files.forEach((file, idx) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    _uploadedImageDataURLs[idx] = e.target.result;
+
+                    // 建立縮圖 + 刪除按鈕
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'relative group';
+                    wrapper.dataset.idx = idx;
+                    wrapper.innerHTML = `
+                        <img src="${e.target.result}" class="w-20 h-14 object-cover rounded-xl border-2 border-blue-100 shadow-sm" alt="預覽圖 ${idx + 1}">
+                        <button type="button" onclick="removePreviewImage(${idx})" class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-rose-500 text-white rounded-full text-[10px] font-bold shadow flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                        <span class="absolute bottom-0.5 left-0 right-0 text-center text-[9px] text-white font-bold bg-black/40 rounded-b-xl py-0.5">${idx === 0 ? '封面' : '圖' + (idx + 1)}</span>
+                    `;
+                    previewList.appendChild(wrapper);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function removePreviewImage(idx) {
+            _uploadedImageDataURLs.splice(idx, 1);
+            // 重新觸發 input 重置，並清空預覽（讓使用者重新選）
+            document.getElementById('form-hotel-images').value = '';
+            const previewList = document.getElementById('img-preview-list');
+            previewList.innerHTML = '';
+            _uploadedImageDataURLs.forEach((dataURL, i) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'relative group';
+                wrapper.innerHTML = `
+                    <img src="${dataURL}" class="w-20 h-14 object-cover rounded-xl border-2 border-blue-100 shadow-sm" alt="預覽圖 ${i + 1}">
+                    <button type="button" onclick="removePreviewImage(${i})" class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-rose-500 text-white rounded-full text-[10px] font-bold shadow flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                    <span class="absolute bottom-0.5 left-0 right-0 text-center text-[9px] text-white font-bold bg-black/40 rounded-b-xl py-0.5">${i === 0 ? '封面' : '圖' + (i + 1)}</span>
+                `;
+                previewList.appendChild(wrapper);
+            });
+        }
+
+        function validateAndUploadHotel() {
+            const name = document.getElementById('form-hotel-name').value.trim();
+            const desc = document.getElementById('form-hotel-desc').value.trim();
+            const address = document.getElementById('form-hotel-address').value.trim();
+            const roomType = document.getElementById('form-room-type').value.trim();
+            const maxP = document.getElementById('form-room-max').value;
+            const region = document.getElementById('form-hotel-region').value;
+            const stock = parseInt(document.getElementById('form-room-stock').value) || 0;
+            const priceWeekday = parseInt(document.getElementById('form-price-weekday').value) || 0;
+            const priceWeekend = parseInt(document.getElementById('form-price-weekend').value) || 0;
+            const priceHoliday = parseInt(document.getElementById('form-price-holiday').value) || 0;
+
+            if (!name || !desc || !roomType || !maxP || !address) {
+                alertNotification("⚠️ 資料完整性檢查失敗：請確認星號(*)必填欄位是否填寫完畢！", false);
+                return;
+            }
+            if (priceWeekday <= 0) {
+                alertNotification("⚠️ 請輸入有效的平日基本價格（需大於 0）！", false);
+                return;
+            }
+
+            // 設備：從勾選动態讀取
+            const amenitiesMap = {
+                'wifi': 'WiFi',
+                'pool': '泳池',
+                'parking': '唔車場',
+                'pets': '允許櫜帶寵物'
+            };
+            const amenities = [];
+            const wifiEl = document.querySelector('#hotel-mgmt input[type="checkbox"]:nth-child(1)');
+            // 讀取設備 checkboxes 狀態
+            const allCheckboxes = document.querySelectorAll('#sec-hotel-mgmt input[type="checkbox"]');
+            const amenityLabels = ['WiFi', '泳池', '唔車場', '允許櫜帶寵物'];
+            allCheckboxes.forEach((cb, i) => {
+                if (cb.checked && amenityLabels[i]) amenities.push(amenityLabels[i]);
+            });
+
+            // 決定封面圖
+            const coverImage = _uploadedImageDataURLs.length > 0
+                ? _uploadedImageDataURLs[0]
+                : "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=400&q=80";
+
+            // --- 資料互通 ---
+            let appState = { hotelDatabase: [] };
+            const rawState = localStorage.getItem('agentTT_appState');
+            if (rawState) appState = JSON.parse(rawState);
+            if (!appState.hotelDatabase) appState.hotelDatabase = [];
+
+            const newHotel = {
+                id: 'admin_' + Date.now(),
+                name: name,
+                region: region,
+                // 前端必要欄位
+                location: address,          // 前端用 hotel.location
+                type: roomType,             // 前端用 hotel.type
+                roomTypes: [roomType],      // 前端用 hotel.roomTypes
+                pricePerNight: priceWeekday, // 前端用 hotel.pricePerNight
+                amenities: amenities,       // 前端用 hotel.amenities
+                stock: stock,               // 前端用 hotel.stock
+                // 管理員欄位
+                desc: desc,
+                roomType: roomType,
+                maxPeople: parseInt(maxP),
+                price: priceWeekday,
+                priceWeekday: priceWeekday,
+                priceWeekend: priceWeekend,
+                priceHoliday: priceHoliday,
+                rating: 5.0,
+                totalReviews: 0,
+                reviews: [],
+                image: coverImage,
+                images: [..._uploadedImageDataURLs],
+                checkInTime: '15:00-20:00'
+            };
+
+            appState.hotelDatabase.unshift(newHotel);
+            localStorage.setItem('agentTT_appState', JSON.stringify(appState));
+
+            // 更新管理員表格
+            const table = document.getElementById('hotel-list-table');
+            const newRow = document.createElement('tr');
+            newRow.className = "border-b border-gray-100 hover:bg-blue-50/50 transition bg-emerald-50/30";
+            const imgThumb = `<img src="${coverImage}" class="w-14 h-10 object-cover rounded-lg border border-gray-100" alt="縮圖">`;
+            const stockDisplay = stock === 0
+                ? `<span class="font-bold text-rose-500">已滿房</span>`
+                : `<span class="font-bold ${stock <= 2 ? 'text-amber-600' : 'text-gray-700'}">${stock} 間</span>`;
+            newRow.innerHTML = `
+                <td class="p-3 font-bold text-gray-800">${name}</td>
+                <td class="p-3 text-gray-500 text-xs">${address}</td>
+                <td class="p-3 text-gray-500">${roomType} / ${maxP}人</td>
+                <td class="p-3 text-gray-500">15:00-20:00</td>
+                <td class="p-3 font-bold text-blue-700">$${priceWeekday.toLocaleString()}</td>
+                <td class="p-3">${stockDisplay}</td>
+                <td class="p-3">${imgThumb}</td>
+                <td class="p-3"><span class="bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full text-xs font-bold">已同步至前端</span></td>
+                <td class="p-3"><button class="text-blue-600 font-bold hover:underline cursor-pointer">編輯</button></td>
+            `;
+            table.prepend(newRow);
+
+            // 清空表單
+            document.getElementById('form-hotel-name').value = "";
+            document.getElementById('form-hotel-address').value = "";
+            document.getElementById('form-hotel-desc').value = "";
+            document.getElementById('form-price-weekday').value = "4500";
+            document.getElementById('form-price-weekend').value = "6000";
+            document.getElementById('form-price-holiday').value = "8000";
+            document.getElementById('form-room-stock').value = "5";
+            document.getElementById('form-hotel-images').value = "";
+            document.getElementById('img-preview-list').innerHTML = "";
+            _uploadedImageDataURLs = [];
+
+            alertNotification(`🎉 成功！房源【${name}】已同步發布至使用者端，一般使用者已可即時搜尋！`);
+        }
+
+        // ==================== 流程二邏輯 ====================
+        function calculatePreviewPrice() {
+            const basePrice = parseInt(document.getElementById('price-weekday').value) || 0;
+            const discountType = document.getElementById('discount-type').value;
+
+            let minus = 0;
+            if (discountType === 'early') {
+                minus = Math.round(basePrice * 0.15);
+            } else if (discountType === 'member') {
+                minus = basePrice >= 5000 ? 1000 : 0;
+            }
+
+            const total = basePrice - minus;
+
+            document.getElementById('detail-base').innerText = `$${basePrice.toLocaleString()}`;
+            document.getElementById('detail-minus').innerText = `-$${minus.toLocaleString()}`;
+            document.getElementById('detail-total').innerText = `$${total.toLocaleString()}`;
+        }
+
+        function savePriceConfiguration(isCorrect) {
+            if (!isCorrect) {
+                alertNotification("已退回優惠方案設定頁面，管理員可重新調整策略規則。", false);
+                return;
+            }
+            alertNotification("自動價格計算無誤！系統已成功保存最新價格策略設定與歷史變更紀錄。");
+        }
+
+        // ==================== 流程三邏輯 ====================
+        function approveRefundPolicy(isApproved) {
+            if (isApproved) {
+                alertNotification("金額符合規定！系統已核准自動退款，並將訂單狀態更新為：[已退款]。");
+            }
+        }
+
+        function openChatWithCustomer() {
+            document.getElementById('chat-status-dot').className = "w-2.5 h-2.5 bg-emerald-400 rounded-full animate-pulse";
+            document.getElementById('chat-title-name').innerText = "與 郭佳瑜 即時爭議溝通中";
+
+            const window = document.getElementById('chat-message-window');
+            window.innerHTML = `
+                <div class="text-center text-xs text-gray-400 my-2 font-medium">—— 安全加密即時連線已建立 ——</div>
+                <div class="flex justify-start mb-3"><div class="bg-white border border-gray-200 shadow-sm text-gray-700 p-3 rounded-2xl rounded-tl-sm max-w-[80%] text-sm">您好，我看到我退款被扣了50%，但我是因為不可抗力因素才取消的，能否通融處理？</div></div>
+            `;
+
+            document.getElementById('chat-input').disabled = false;
+            document.getElementById('chat-send-btn').disabled = false;
+            document.getElementById('chat-send-btn').className = "bg-brand-blue hover:bg-brand-blue-hover text-white px-4 rounded-xl text-sm font-bold transition shadow-md cursor-pointer";
+        }
+
+        function sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            const msg = input.value.trim();
+            if (!msg) return;
+
+            const window = document.getElementById('chat-message-window');
+            window.innerHTML += `
+                <div class="flex justify-end mb-3"><div class="bg-brand-blue text-white shadow-md p-3 rounded-2xl rounded-tr-sm max-w-[80%] text-sm">${msg}</div></div>
+            `;
+            input.value = "";
+            window.scrollTop = window.scrollHeight;
+
+            // 模擬顧客 1.5 秒後回覆
+            setTimeout(() => {
+                window.innerHTML += `
+                    <div class="flex justify-start mb-3"><div class="bg-white border border-gray-200 shadow-sm text-gray-700 p-3 rounded-2xl rounded-tl-sm max-w-[80%] text-sm">好喔，謝謝管理員這麼快上線幫我協調，那我接受這個處理方式！</div></div>
+                `;
+                window.scrollTop = window.scrollHeight;
+            }, 1500);
+        }
+
+        function submitAdminReply() {
+            const text = document.getElementById('admin-reply-text').value.trim();
+            if (!text) {
+                alertNotification("請輸入回覆內容！", false);
+                return;
+            }
+
+            document.getElementById('reply-box-container').innerHTML = `
+                <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 text-sm">
+                    <span class="font-bold text-brand-blue block mb-1"><i class="fa-solid fa-reply mr-1.5"></i>管理員官方回覆：</span>
+                    <p class="text-gray-700">${text}</p>
+                </div>
+            `;
+            alertNotification("官方評價回覆已成功送出，已發布至前端旅宿詳情頁面。");
+        }
+        // ==================== 🚀 新增：開機自動讀取已上架的房源 ====================
+        window.addEventListener('DOMContentLoaded', () => {
+            // 1. 去瀏覽器的共用快取（黑板）找資料
+            const rawState = localStorage.getItem('agentTT_appState');
+            if (!rawState) return; // 如果沒資料就先跳出
+
+            const appState = JSON.parse(rawState);
+
+            // 讀取並渲染顧客預訂訂單
+            renderAdminBookings();
+
+            if (!appState.hotelDatabase) return; // 如果沒有房源資料庫也跳出
+
+            const table = document.getElementById('hotel-list-table');
+
+            // 2. 把資料庫裡的房源名單倒過來排序 (確保最新的排在最上面)
+            const savedHotels = [...appState.hotelDatabase].reverse();
+
+            // 3. 把每一筆房源畫回管理員的表格裡
+            savedHotels.forEach(hotel => {
+                const newRow = document.createElement('tr');
+                newRow.className = "border-b border-gray-100 hover:bg-blue-50/50 transition bg-emerald-50/30";
+                const weekdayPrice = hotel.priceWeekday || hotel.price || 0;
+                const imgSrc = hotel.image || '';
+                const imgCell = imgSrc
+                    ? `<img src="${imgSrc}" class="w-14 h-10 object-cover rounded-lg border border-gray-100" alt="縮圖">`
+                    : `<span class="text-xs text-gray-400">無圖片</span>`;
+                const stock = hotel.stock !== undefined ? hotel.stock : 99;
+                const stockDisplay = stock === 0
+                    ? `<span class="font-bold text-rose-500">已滿房</span>`
+                    : `<span class="font-bold ${stock <= 2 ? 'text-amber-600' : 'text-gray-700'}">${stock} 間</span>`;
+                newRow.innerHTML = `
+                    <td class="p-3 font-bold text-gray-800">${hotel.name}</td>
+                    <td class="p-3 text-gray-500">${hotel.region || '未設定'}</td>
+                    <td class="p-3 text-gray-500">${hotel.roomType || '自訂房型'}</td>
+                    <td class="p-3 text-gray-500">${hotel.checkInTime || '15:00-20:00'}</td>
+                    <td class="p-3 font-bold text-blue-700">$${weekdayPrice.toLocaleString()}</td>
+                    <td class="p-3">${stockDisplay}</td>
+                    <td class="p-3">${imgCell}</td>
+                    <td class="p-3"><span class="bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full text-xs font-bold">已同步至前端</span></td>
+                    <td class="p-3"><button class="text-blue-600 font-bold hover:underline cursor-pointer">編輯</button></td>
+                `;
+                table.prepend(newRow);
+            });
+        });
+    </script>
+</body>
+
+</html>
