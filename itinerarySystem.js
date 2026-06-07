@@ -937,10 +937,32 @@ const ItinerarySystem = {
         `).join('');
     },
 
-    removeFromWishlist(id) {
-        this.db.wishlist = this.db.wishlist.filter(w => w.id !== id);
-        this.renderWishlistBlock();
-    },
+     removeFromWishlist(id) {
+         this.db.wishlist = this.db.wishlist.filter(w => w.id !== id);
+         this.renderWishlistBlock();
+     },
+ 
+     viewHistoryTripDetail(id) {
+         const ht = this.db.historyTrips.find(t => t.id === id);
+         if (!ht) return;
+         
+         const mockTrip = {
+             id: ht.id,
+             name: ht.name,
+             days: 2,
+             date: '2026-07-15',
+             spots: [
+                 { name: '[景點] 安平古堡', day: 1, timestamp: Date.now() + 1, priority: '必去' },
+                 { name: '[餐廳] 文章牛肉湯', day: 1, timestamp: Date.now() + 2, priority: '推薦' },
+                 { name: '[景點] 赤崁樓', day: 2, timestamp: Date.now() + 3, priority: '必去' },
+                 { name: '[餐廳] 度小月擔仔麵', day: 2, timestamp: Date.now() + 4, priority: '推薦' }
+             ]
+         };
+         
+         if (typeof window.loadHistoryTrip === 'function') {
+             window.loadHistoryTrip(mockTrip);
+         }
+     },
 
     planTripFromWishlist(name) {
         if (!this.db.currentTrip) {

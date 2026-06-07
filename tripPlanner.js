@@ -330,7 +330,32 @@ window.renderWorkspaceBookedItems = function() {
     }
 };
 
-window.addSpotToTimeline = function(spotName, targetDay = 1) {
+window.addSpotToTimeline = function(spotName, targetDay = null) {
+    if (!currentTrip) {
+        alert('請建立或載入行程後再進行加入操作！');
+        return;
+    }
+    
+    // 如果為多日行程，提示用戶選擇要加入哪一天
+    if (targetDay === null || targetDay === 1) {
+        if (currentTrip.days > 1) {
+            let optionsStr = "";
+            for (let d = 1; d <= currentTrip.days; d++) {
+                optionsStr += `${d}: 第 ${d} 天\n`;
+            }
+            const promptVal = prompt(`請選擇要將「${spotName}」排在第幾天？\n\n${optionsStr}`, "1");
+            if (promptVal === null) return; // 使用者按取消
+            const chosenDay = parseInt(promptVal);
+            if (isNaN(chosenDay) || chosenDay < 1 || chosenDay > currentTrip.days) {
+                alert(`請輸入有效的範圍 (1 到 ${currentTrip.days})！`);
+                return;
+            }
+            targetDay = chosenDay;
+        } else {
+            targetDay = 1;
+        }
+    }
+
     currentTrip.spots.push({
         name: spotName,
         day: targetDay,
@@ -350,7 +375,12 @@ window.addSpotToTimeline = function(spotName, targetDay = 1) {
     }
 };
 
-window.addBookedItemToTimeline = function(itemId, type, targetDay = 1) {
+window.addBookedItemToTimeline = function(itemId, type, targetDay = null) {
+    if (!currentTrip) {
+        alert('請建立或載入行程後再進行加入操作！');
+        return;
+    }
+
     let itemName = '';
     let bookingData = null;
 
@@ -367,6 +397,26 @@ window.addBookedItemToTimeline = function(itemId, type, targetDay = 1) {
     }
 
     if (itemName && bookingData) {
+        // 如果為多日行程，提示用戶選擇要加入哪一天
+        if (targetDay === null || targetDay === 1) {
+            if (currentTrip.days > 1) {
+                let optionsStr = "";
+                for (let d = 1; d <= currentTrip.days; d++) {
+                    optionsStr += `${d}: 第 ${d} 天\n`;
+                }
+                const promptVal = prompt(`請選擇要將「${itemName}」排在第幾天？\n\n${optionsStr}`, "1");
+                if (promptVal === null) return; // 使用者按取消
+                const chosenDay = parseInt(promptVal);
+                if (isNaN(chosenDay) || chosenDay < 1 || chosenDay > currentTrip.days) {
+                    alert(`請輸入有效的範圍 (1 到 ${currentTrip.days})！`);
+                    return;
+                }
+                targetDay = chosenDay;
+            } else {
+                targetDay = 1;
+            }
+        }
+
         const newSpot = {
             name: itemName,
             day: targetDay,

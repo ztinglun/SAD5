@@ -111,21 +111,33 @@ window.TicketingSystem = {
 
         const deadline = this.calculatePaymentDeadline(date, trainInfo.departureTime);
 
-if (deadline < new Date()) {
+        if (deadline < new Date()) {
             showToastNotification('此班次已超過訂票或付款期限（發車前20分鐘截止），請選擇未來的班次！', 'error');
             return null;
         }
+
+        const cabinType = (window.ticketingState && window.ticketingState.searchParams && window.ticketingState.searchParams.cabin) || '標準';
 
         const order = {
             id: 'ORD' + Date.now(),
             mainBuyerId: currentUser.name,
             trainInfo, passengers, date, pickupMethod, totalAmount,
+            cabinType,
             status: 'pending_payment', // 狀態: 待付款
             deadline: deadline.toISOString(),
             createdAt: new Date().toISOString(),
             isModified: false,
             paymentMethod: null
         };
+
+        // 扣除該車種/車廂的剩餘座位
+        const train = trainSchedulesDB.find(t => t.trainNumber === trainInfo.trainNumber);
+        if (train) {
+            const cabin = train.cabins.find(c => c.type === cabinType);
+            if (cabin && cabin.remainingSeats !== 999) {
+                cabin.remainingSeats = Math.max(0, cabin.remainingSeats - passengers.length);
+            }
+        }
 
         ticketOrders.push(order);
         AppPersistence.autoSave();
@@ -286,6 +298,15 @@ if (deadline < new Date()) {
         }
 
         order.status = 'refunded';
+        // 還原該車種/車廂的剩餘座位
+        const train = trainSchedulesDB.find(t => t.trainNumber === order.trainInfo.trainNumber);
+        if (train) {
+            const cabinType = order.cabinType || '標準';
+            const cabin = train.cabins.find(c => c.type === cabinType);
+            if (cabin && cabin.remainingSeats !== 999) {
+                cabin.remainingSeats += order.passengers.length;
+            }
+        }
         AppPersistence.autoSave();
     },
 
