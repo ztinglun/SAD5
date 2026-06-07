@@ -1,0 +1,2680 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent TT 旅遊平台 - 智慧隨行，去趣旅行</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #F3F4F6;
+        }
+
+        /* 去趣 chicTrip 風格調色盤定義 */
+        .brand-blue {
+            color: #1E40AF;
+        }
+
+        .bg-brand-blue {
+            background-color: #1E40AF;
+        }
+
+        .bg-brand-blue-hover {
+            background-color: #1D4ED8;
+        }
+
+        .brand-yellow {
+            color: #FCD34D;
+        }
+
+        .bg-brand-yellow {
+            background-color: #FCD34D;
+        }
+
+        .bg-brand-yellow-hover {
+            background-color: #FBBF24;
+        }
+
+        /* 側邊欄平滑動畫 */
+        .sidebar-transition {
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* 隱藏滾動條但保持功能 */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .modal-enter {
+            animation: modalIn 0.3s ease-out;
+        }
+
+        @keyframes modalIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .star-btn {
+            cursor: pointer;
+            transition: color 0.15s;
+            font-size: 1.5rem;
+        }
+
+        .star-btn:hover,
+        .star-btn.active {
+            color: #FBBF24;
+        }
+
+        .star-btn.inactive {
+            color: #D1D5DB;
+        }
+
+        .shimmer {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: 200% 0
+            }
+
+            100% {
+                background-position: -200% 0
+            }
+        }
+
+        .pulse-dot {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: .4;
+                transform: scale(0.95)
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.05)
+            }
+        }
+
+        /* 行程靈感抽屜動態樣式 */
+        .drawer-backdrop-active {
+            opacity: 1 !important;
+            pointer-events: auto !important;
+        }
+
+        .drawer-active {
+            transform: translateX(0) !important;
+        }
+
+
+        /* === RWD 響應式設計 === */
+        .mobile-hamburger {
+            display: none;
+        }
+
+        /* 側邊欄行動裝置覆蓋層 */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            top: 64px;
+            background: rgba(0, 0, 0, 0.35);
+            z-index: 19;
+            backdrop-filter: blur(2px);
+        }
+
+        .sidebar-overlay.active {
+            display: block;
+        }
+
+        /* 平板 (≤ 1024px) */
+        @media (max-width: 1024px) {
+            #hotel-detail-col {
+                width: 340px !important;
+            }
+
+            .header-trip-btn-text {
+                display: none;
+            }
+        }
+
+        /* 手機 (≤ 768px) */
+        @media (max-width: 768px) {
+            .mobile-hamburger {
+                display: flex;
+            }
+
+            /* 側邊欄：隱藏並以滑入覆蓋方式開啟 */
+            #sidebar {
+                position: fixed !important;
+                left: -260px;
+                top: 64px;
+                bottom: 0;
+                z-index: 25;
+                width: 240px !important;
+                transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                box-shadow: none;
+            }
+
+            #sidebar.mobile-open {
+                left: 0;
+                box-shadow: 4px 0 24px rgba(0, 0, 0, 0.1);
+            }
+
+            /* Header 調整 */
+            header {
+                padding-left: 12px;
+                padding-right: 12px;
+            }
+
+            .header-lang-select {
+                display: none;
+            }
+
+            .header-trip-btn-text {
+                display: none;
+            }
+
+            /* 住宿詳情面板：全螢幕覆蓋 */
+            #hotel-detail-col {
+                position: fixed !important;
+                inset: 0;
+                top: 64px;
+                width: 100% !important;
+                z-index: 30;
+            }
+
+            /* 住宿列表佈局調整 */
+            #hotel-grid {
+                grid-template-columns: 1fr !important;
+            }
+
+            /* 行程規劃右側面板 */
+            #trip-step-b>.w-80 {
+                width: 100% !important;
+                min-width: 0;
+            }
+
+            #trip-step-b {
+                flex-direction: column !important;
+            }
+
+            /* 探索頁面地圖 */
+            .explore-map-container {
+                height: 220px !important;
+            }
+
+            /* 首頁快捷入口 */
+            .home-hero-quick-bar {
+                max-width: 100%;
+                margin: 0 12px;
+            }
+
+            /* 通用：模態框全寬 */
+            #booking-modal>div,
+            #review-modal>div,
+            #explore-modal>div {
+                max-width: 100% !important;
+                margin: 8px !important;
+                border-radius: 16px !important;
+            }
+        }
+
+        /* 超小螢幕 (≤ 480px) */
+        @media (max-width: 480px) {
+
+            header h1,
+            header .text-2xl {
+                font-size: 1.1rem;
+            }
+
+            #page-explore .grid-cols-5 {
+                grid-template-columns: repeat(3, 1fr) !important;
+            }
+
+            #page-social-wall {
+                padding-left: 12px;
+                padding-right: 12px;
+            }
+        }
+    </style>
+</head>
+
+<body class="h-screen flex flex-col overflow-hidden">
+
+    <header
+        class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 z-30 shrink-0 shadow-sm">
+        <div class="flex items-center space-x-3">
+            <!-- 行動裝置漢堡選單按鈕 -->
+            <button onclick="toggleMobileSidebar()"
+                class="mobile-hamburger items-center justify-center w-10 h-10 rounded-xl hover:bg-gray-100 text-gray-600 transition cursor-pointer">
+                <i class="fa-solid fa-bars text-lg"></i>
+            </button>
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchPage('home')">
+                <div
+                    class="w-10 h-10 bg-brand-blue rounded-xl flex items-center justify-center shadow-md shadow-blue-200">
+                    <i class="fa-solid fa-plane-departure brand-yellow text-xl"></i>
+                </div>
+                <span class="text-2xl font-bold tracking-wider text-blue-900">Agent <span
+                        class="text-amber-500">TT</span></span>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-6">
+            <div class="relative header-lang-select">
+                <select onchange="changeLanguage(this)"
+                    class="appearance-none bg-gray-50 border border-gray-300 rounded-lg py-1.5 pl-3 pr-8 text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                    <option value="繁體中文 (TW)">繁體中文 (TW)</option>
+                    <option value="English (US)">English (US)</option>
+                    <option value="日本語 (JP)">日本語 (JP)</option>
+                </select>
+                <i
+                    class="fa-solid fa-chevron-down absolute right-2.5 top-3 text-xs text-gray-500 pointer-events-none"></i>
+            </div>
+            <button onclick="switchPage('create-trip')"
+                class="flex items-center space-x-1.5 text-gray-600 hover:text-blue-800 font-medium transition cursor-pointer">
+                <i class="fa-solid fa-calendar-days text-lg text-amber-500"></i>
+                <span class="text-sm header-trip-btn-text">我的行程</span>
+            </button>
+            <button id="header-login-btn" onclick="switchPage('login')"
+                class="bg-brand-blue hover:bg-brand-blue-hover text-white px-5 py-2 rounded-xl text-sm font-medium transition cursor-pointer shadow-md shadow-blue-100">
+                登入 / 註冊
+            </button>
+        </div>
+    </header>
+
+    <!-- 行動裝置側邊欄遮罩 -->
+    <div id="sidebar-overlay" class="sidebar-overlay" onclick="closeMobileSidebar()"></div>
+
+    <div class="flex-1 flex overflow-hidden relative">
+
+        <aside id="sidebar"
+            class="w-64 bg-white border-r border-gray-200 flex flex-col justify-between sidebar-transition z-20 shrink-0 shadow-sm relative">
+            <div class="p-4 space-y-2">
+                <div class="flex justify-end mb-2">
+                    <button onclick="toggleSidebar()"
+                        class="p-2 rounded-lg hover:bg-gray-100 text-gray-500 cursor-pointer transition">
+                        <i id="sidebar-toggle-icon" class="fa-solid fa-angle-left text-lg"></i>
+                    </button>
+                </div>
+                <nav class="space-y-1">
+                    <button id="sidebar-admin-btn" onclick="switchPage('admin-dashboard')"
+                        class="hidden w-full flex items-center space-x-3 px-4 py-3.5 rounded-xl font-medium transition text-left cursor-pointer text-rose-600 hover:bg-rose-50">
+                        <i class="fa-solid fa-screwdriver-wrench text-lg w-6 text-center"></i>
+                        <span class="sidebar-text text-sm font-bold">管理員後台系統</span>
+                    </button>
+                    <button onclick="switchPage('home')" id="nav-home"
+                        class="w-full flex items-center space-x-3 px-4 py-3.5 rounded-xl font-medium transition text-left cursor-pointer text-gray-600 hover:bg-gray-50">
+                        <i class="fa-solid fa-house text-lg w-6 text-center"></i>
+                        <span class="sidebar-text text-sm">首頁大廳</span>
+                    </button>
+                    <button onclick="switchPage('create-trip')" id="nav-create-trip"
+                        class="w-full flex items-center space-x-3 px-4 py-3.5 rounded-xl font-medium transition text-left cursor-pointer text-gray-600 hover:bg-gray-50">
+                        <i class="fa-solid fa-route text-lg w-6 text-center"></i>
+                        <span class="sidebar-text text-sm">建立行程</span>
+                    </button>
+                    <button onclick="switchPage('my-bookings')" id="nav-my-bookings"
+                        class="w-full flex items-center space-x-3 px-4 py-3.5 rounded-xl font-medium transition text-left cursor-pointer text-gray-600 hover:bg-gray-50">
+                        <i class="fa-solid fa-bed text-lg w-6 text-center"></i>
+                        <span class="sidebar-text text-sm">我的住宿</span>
+                    </button>
+                    <button onclick="switchPage('social-wall')" id="nav-social-wall"
+                        class="w-full flex items-center space-x-3 px-4 py-3.5 rounded-xl font-medium transition text-left cursor-pointer text-gray-600 hover:bg-gray-50">
+                        <i class="fa-solid fa-compass text-lg w-6 text-center"></i>
+                        <span class="sidebar-text text-sm">動態牆</span>
+                    </button>
+                    <button onclick="switchPage('explore')" id="nav-explore"
+                        class="w-full flex items-center space-x-3 px-4 py-3.5 rounded-xl font-medium transition text-left cursor-pointer text-gray-600 hover:bg-gray-50">
+                        <i class="fa-solid fa-map-location-dot text-lg w-6 text-center"></i>
+                        <span class="sidebar-text text-sm">探索周圍</span>
+                    </button>
+                    <button onclick="switchPage('member-center')" id="nav-member-center"
+                        class="w-full flex items-center space-x-3 px-4 py-3.5 rounded-xl font-medium transition text-left cursor-pointer text-gray-600 hover:bg-gray-50">
+                        <i class="fa-solid fa-circle-user text-lg w-6 text-center"></i>
+                        <span class="sidebar-text text-sm">會員專區</span>
+                    </button>
+                </nav>
+            </div>
+            <div class="p-4 border-t border-gray-100 text-center sidebar-text">
+                <span class="text-xs text-gray-400">© 2026 Agent TT Travel</span>
+            </div>
+        </aside>
+
+        <main class="flex-1 overflow-y-auto no-scrollbar bg-gray-50 relative">
+            <section id="page-admin-dashboard" class="page-section hidden p-8 bg-gray-50">
+                <h2 class="text-xl font-bold mb-4 text-gray-800">房源上架與管理中心</h2>
+                <div class="bg-white p-6 rounded-2xl shadow-sm space-y-4 max-w-3xl">
+                    <p class="text-sm text-gray-500">在此新增的房源，會立刻同步到前台給使用者預訂。</p>
+                    <input type="text" id="form-hotel-name" placeholder="房源名稱 (例如: 台南文青旅宿)"
+                        class="w-full border border-gray-200 p-3 rounded-xl text-sm">
+                    <input type="number" id="form-hotel-price" placeholder="每晚定價 (例如: 3500)"
+                        class="w-full border border-gray-200 p-3 rounded-xl text-sm">
+                    <textarea id="form-hotel-desc" placeholder="輸入房源描述..."
+                        class="w-full border border-gray-200 p-3 rounded-xl text-sm h-24"></textarea>
+                    <button onclick="validateAndUploadHotel()"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold cursor-pointer">
+                        發布至使用者前端
+                    </button>
+                </div>
+            </section>
+
+            <section id="page-home" class="page-section hidden animate-fade-in">
+                <div class="relative h-[420px] bg-cover bg-center flex flex-col justify-center items-center text-white px-4"
+                    style="background-image: linear-gradient(rgba(30, 64, 175, 0.45), rgba(15, 23, 42, 0.6)), url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80');">
+                    <h1 class="text-4xl md:text-5xl font-extrabold mb-4 tracking-wide drop-shadow-md">開啟你的下一趟有趣冒險</h1>
+                    <p class="text-lg md:text-xl text-gray-100 mb-12 font-light drop-shadow-sm">用智慧探路，讓行程規劃變得前所未有的簡單</p>
+
+                    <div
+                        class="absolute bottom-[-28px] bg-white rounded-2xl shadow-xl p-4 flex space-x-4 max-w-xl w-full mx-4 border border-gray-100">
+                        <button onclick="switchPage('create-trip')"
+                            class="flex-1 flex flex-col items-center justify-center py-3 rounded-xl hover:bg-amber-50 text-gray-700 transition cursor-pointer group">
+                            <i
+                                class="fa-solid fa-lightbulb text-2xl text-amber-500 mb-1 group-hover:scale-110 transition"></i>
+                            <span class="text-sm font-semibold">找行程</span>
+                        </button>
+                        <div class="w-[1px] bg-gray-200 my-2"></div>
+                        <button onclick="switchPage('accommodation')"
+                            class="flex-1 flex flex-col items-center justify-center py-3 rounded-xl hover:bg-blue-50 text-gray-700 transition cursor-pointer group">
+                            <i
+                                class="fa-solid fa-hotel text-2xl text-blue-600 mb-1 group-hover:scale-110 transition"></i>
+                            <span class="text-sm font-semibold">找住宿</span>
+                        </button>
+                        <div class="w-[1px] bg-gray-200 my-2"></div>
+                        <button onclick="switchPage('ticketing')"
+                            class="flex-1 flex flex-col items-center justify-center py-3 rounded-xl hover:bg-emerald-50 text-gray-700 transition cursor-pointer group">
+                            <i
+                                class="fa-solid fa-train text-2xl text-emerald-600 mb-1 group-hover:scale-110 transition"></i>
+                            <span class="text-sm font-semibold">查詢車次</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="max-w-6xl mx-auto px-6 pt-16 pb-12 space-y-12">
+                    <div>
+                        <div class="flex items-center space-x-2 mb-6">
+                            <i class="fa-solid fa-star text-2xl text-amber-400"></i>
+                            <h2 class="text-2xl font-bold text-gray-800">星榜推薦行程</h2>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div onclick="selectInspiration('tainan')"
+                                class="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition cursor-pointer group border border-gray-100">
+                                <div class="relative h-48 overflow-hidden">
+                                    <img src="./台南古城美食與文青漫遊_0.jpg"
+                                        class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                                    <span
+                                        class="absolute top-3 right-3 bg-black/60 text-white text-xs px-2.5 py-1 rounded-full font-medium">3
+                                        天 2 夜</span>
+                                </div>
+                                <div class="p-4 space-y-2">
+                                    <h3 class="font-bold text-lg text-gray-800 group-hover:text-blue-700 transition">
+                                        台南古城美食與文青漫遊</h3>
+                                    <div class="flex justify-between items-center text-sm text-gray-500">
+                                        <span><i class="fa-solid fa-user text-xs mr-1"></i> 趣趣官方</span>
+                                        <span class="text-amber-500 font-bold"><i
+                                                class="fa-solid fa-star text-xs mr-0.5"></i> 4.9 (150+)</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div onclick="selectInspiration('kaohsiung')"
+                                class="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition cursor-pointer group border border-gray-100">
+                                <div class="relative h-48 overflow-hidden">
+                                    <img src="./高雄港都風景與藝文體驗_0.jpg"
+                                        class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                                    <span
+                                        class="absolute top-3 right-3 bg-black/60 text-white text-xs px-2.5 py-1 rounded-full font-medium">4
+                                        天 3 夜</span>
+                                </div>
+                                <div class="p-4 space-y-2">
+                                    <h3 class="font-bold text-lg text-gray-800 group-hover:text-blue-700 transition">
+                                        高雄港都風情與藝文體驗</h3>
+                                    <div class="flex justify-between items-center text-sm text-gray-500">
+                                        <span><i class="fa-solid fa-user text-xs mr-1"></i> 達人狂推</span>
+                                        <span class="text-amber-500 font-bold"><i
+                                                class="fa-solid fa-star text-xs mr-0.5"></i> 4.8 (112)</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div onclick="selectInspiration('kenting')"
+                                class="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition cursor-pointer group border border-gray-100">
+                                <div class="relative h-48 overflow-hidden">
+                                    <img src="./屏東墾丁陽光海灘放鬆之旅_0.jpg"
+                                        class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                                    <span
+                                        class="absolute top-3 right-3 bg-black/60 text-white text-xs px-2.5 py-1 rounded-full font-medium">3
+                                        天 2 夜</span>
+                                </div>
+                                <div class="p-4 space-y-2">
+                                    <h3 class="font-bold text-lg text-gray-800 group-hover:text-blue-700 transition">
+                                        屏東墾丁陽光海灘放鬆之旅</h3>
+                                    <div class="flex justify-between items-center text-sm text-gray-500">
+                                        <span><i class="fa-solid fa-user text-xs mr-1"></i> 熱門精選</span>
+                                        <span class="text-amber-500 font-bold"><i
+                                                class="fa-solid fa-star text-xs mr-0.5"></i> 4.7 (88)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center"><i
+                                class="fa-solid fa-thumbs-up text-blue-600 mr-2"></i>為你推薦住宿</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                            <div onclick="viewHotelFromHomepage('h1')"
+                                class="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition border border-gray-100 cursor-pointer">
+                                <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=400&q=80"
+                                    class="w-full h-36 object-cover">
+                                <div class="p-3">
+                                    <h4 class="font-bold text-gray-800 text-sm mb-1 line-clamp-1">台南晶英酒店</h4>
+                                    <p class="text-xs text-gray-400">台南市中西區 • 奢華五星</p>
+                                </div>
+                            </div>
+                            <div onclick="viewHotelFromHomepage('h3')"
+                                class="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition border border-gray-100 cursor-pointer">
+                                <img src="https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=400&q=80"
+                                    class="w-full h-36 object-cover">
+                                <div class="p-3">
+                                    <h4 class="font-bold text-gray-800 text-sm mb-1 line-clamp-1">高雄洲際酒店</h4>
+                                    <p class="text-xs text-gray-400">高雄市前鎮區 • 頂級享受</p>
+                                </div>
+                            </div>
+                            <div onclick="viewHotelFromHomepage('h2')"
+                                class="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition border border-gray-100 cursor-pointer">
+                                <img src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=400&q=80"
+                                    class="w-full h-36 object-cover">
+                                <div class="p-3">
+                                    <h4 class="font-bold text-gray-800 text-sm mb-1 line-clamp-1">墾丁凱撒大飯店</h4>
+                                    <p class="text-xs text-gray-400">屏東縣恆春鎮 • 渡假天堂</p>
+                                </div>
+                            </div>
+                            <div onclick="viewHotelFromHomepage('h1')"
+                                class="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition border border-gray-100 cursor-pointer">
+                                <img src="./捷絲旅台南十鼓館圖片_0.jpg" class="w-full h-36 object-cover">
+                                <div class="p-3">
+                                    <h4 class="font-bold text-gray-800 text-sm mb-1 line-clamp-1">捷絲旅台南十鼓館</h4>
+                                    <p class="text-xs text-gray-400">台南市仁德區 • 設計旅店</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="page-create-trip" class="page-section hidden h-full animate-fade-in relative bg-gray-50">
+                <!-- Step A: 星榜卡片風格的建立表單 -->
+                <div id="trip-step-a" class="h-full overflow-y-auto no-scrollbar">
+                    <div class="relative h-[300px] flex items-center justify-center bg-cover bg-center shadow-md"
+                        style="background-image: linear-gradient(rgba(30, 64, 175, 0.6), rgba(15, 23, 42, 0.8)), url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=1200&q=80');">
+                        <div class="text-center text-white z-10 px-4">
+                            <h2 class="text-3xl md:text-4xl font-extrabold mb-3 drop-shadow-md">打造你的星級旅程</h2>
+                            <p class="text-gray-200 text-sm md:text-base font-light drop-shadow-sm">輸入基本資訊，開啟專屬的智慧規劃體驗
+                            </p>
+                        </div>
+                    </div>
+                    <div class="max-w-2xl mx-auto -mt-16 relative z-20 px-4 pb-12">
+                        <div class="bg-white p-8 rounded-3xl shadow-xl border border-gray-100 space-y-6">
+                            <div class="space-y-5">
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-2">行程名稱</label>
+                                    <input type="text" id="input-trip-name" value="我的星級專屬之旅"
+                                        class="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-3.5 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium transition">
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    <div>
+                                        <label class="block text-sm font-bold text-gray-700 mb-2">出發天數</label>
+                                        <select id="input-trip-days"
+                                            class="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-3.5 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium transition appearance-none cursor-pointer">
+                                            <option value="1">1 天</option>
+                                            <option value="2">2 天</option>
+                                            <option value="3" selected>3 天</option>
+                                            <option value="4">4 天</option>
+                                            <option value="5">5 天</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-bold text-gray-700 mb-2">出發日期</label>
+                                        <input type="date" id="input-trip-date"
+                                            class="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-3.5 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium transition cursor-pointer">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-2">旅遊地點</label>
+                                    <input type="text" id="input-trip-location" value="高雄、墾丁"
+                                        class="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-3.5 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium transition"
+                                        placeholder="例如：東京、澎湖...">
+                                </div>
+                                <button onclick="submitTripSpecs()"
+                                    class="w-full bg-brand-blue hover:bg-brand-blue-hover text-white font-extrabold py-4 rounded-2xl shadow-lg shadow-blue-200 transition transform hover:-translate-y-0.5 cursor-pointer mt-4 flex justify-center items-center gap-2 text-lg">
+                                    <i class="fa-solid fa-wand-magic-sparkles"></i> 立即開始規劃
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step B: 規劃工作區 -->
+                <div id="trip-step-b" class="hidden h-full flex overflow-hidden relative">
+
+                    <div id="pocket-drawer"
+                        class="w-0 bg-white border-r border-gray-200 z-10 sidebar-transition flex flex-col overflow-hidden">
+                        <div class="p-4 border-b border-gray-100 flex justify-between items-center shrink-0">
+                            <span class="font-bold text-gray-800"><i class="fa-solid fa-heart text-rose-500 mr-1"></i>
+                                口袋收藏</span>
+                            <button onclick="closePocketDrawer()" class="text-gray-400 hover:text-gray-600"><i
+                                    class="fa-solid fa-xmark"></i></button>
+                        </div>
+                        <div class="flex border-b border-gray-100 shrink-0">
+                            <button onclick="switchPocketTab('spots')" id="pocket-tab-spots"
+                                class="flex-1 text-xs font-bold py-2 text-blue-600 border-b-2 border-blue-600 transition cursor-pointer">景點收藏</button>
+                            <button onclick="switchPocketTab('hotels')" id="pocket-tab-hotels"
+                                class="flex-1 text-xs font-bold py-2 text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition cursor-pointer">房源收藏</button>
+                            <button onclick="switchPocketTab('booked')" id="pocket-tab-booked"
+                                class="flex-1 text-xs font-bold py-2 text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition cursor-pointer">已訂項目</button>
+                        </div>
+                        <div id="pocket-list-items" class="p-4 space-y-3 overflow-y-auto flex-1 no-scrollbar"></div>
+                    </div>
+
+                    <div class="flex-1 flex flex-col overflow-hidden bg-white">
+                        <div id="middle-view-recommend" class="p-6 overflow-y-auto no-scrollbar flex-1 space-y-6">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-lg font-bold text-gray-800 flex items-center"><i
+                                        class="fa-solid fa-wand-magic-sparkles text-amber-500 mr-2"></i>系統為您推薦的熱門景點</h3>
+                                <div class="relative w-64">
+                                    <input type="text" id="spot-search-input" onkeyup="handleSpotSearch(this.value)"
+                                        placeholder="搜尋景點、餐廳..."
+                                        class="w-full pl-9 pr-4 py-1.5 border border-gray-300 rounded-full text-xs focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                    <i
+                                        class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-gray-400 text-xs"></i>
+                                    <div id="spot-search-suggestions"
+                                        class="hidden absolute left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden max-h-48 overflow-y-auto">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div
+                                    class="border border-gray-100 rounded-xl p-3 flex space-x-3 hover:shadow-md transition">
+                                    <img src="./駁二藝術特區_0.jpg"
+                                        class="w-20 h-20 object-cover rounded-lg shrink-0">
+                                    <div class="flex flex-col justify-between flex-1">
+                                        <div>
+                                            <h4 class="font-bold text-sm text-gray-800">駁二藝術特區</h4>
+                                            <p class="text-xs text-gray-400 mt-0.5">高雄市鹽埕區</p>
+                                        </div>
+                                        <button onclick="addSpotToTimeline('駁二藝術特區')"
+                                            class="self-end text-xs bg-amber-400 hover:bg-amber-500 font-bold px-2.5 py-1 rounded-lg transition cursor-pointer"><i
+                                                class="fa-solid fa-plus mr-0.5"></i>加入</button>
+                                    </div>
+                                </div>
+                                <div
+                                    class="border border-gray-100 rounded-xl p-3 flex space-x-3 hover:shadow-md transition">
+                                    <img src="./墾丁大街夜市_0.jpg"
+                                        class="w-20 h-20 object-cover rounded-lg shrink-0">
+                                    <div class="flex flex-col justify-between flex-1">
+                                        <div>
+                                            <h4 class="font-bold text-sm text-gray-800">墾丁大街夜市</h4>
+                                            <p class="text-xs text-gray-400 mt-0.5">屏東縣恆春鎮</p>
+                                        </div>
+                                        <button onclick="addSpotToTimeline('墾丁大街夜市')"
+                                            class="self-end text-xs bg-amber-400 hover:bg-amber-500 font-bold px-2.5 py-1 rounded-lg transition cursor-pointer"><i
+                                                class="fa-solid fa-plus mr-0.5"></i>加入</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-center pt-2">
+                                <button onclick="loadMoreRecommendSpots()" id="btn-load-more-recommend"
+                                    class="bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-bold px-4 py-2 rounded-xl transition cursor-pointer">
+                                    <i class="fa-solid fa-arrows-rotate mr-1"></i>載入更多推薦
+                                </button>
+                            </div>
+
+                            <!-- 新增：已訂購的行程項目 -->
+                            <div class="mt-8 border-t border-gray-100 pt-6" id="workspace-booked-items-section">
+                                <h3 class="text-lg font-bold text-gray-800 flex items-center mb-4"><i
+                                        class="fa-solid fa-suitcase-rolling text-emerald-500 mr-2"></i>已訂購的行程項目</h3>
+                                <div id="workspace-booked-items-grid" class="grid grid-cols-2 gap-4">
+                                    <p class="text-xs text-gray-400 col-span-2 text-center py-4">目前沒有與此行程日期相符的已訂項目</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="middle-view-map"
+                            class="hidden flex-1 flex flex-col overflow-hidden relative bg-blue-50">
+                            <div
+                                class="p-4 bg-white/90 backdrop-blur-sm shadow-sm flex items-center justify-between z-10">
+                                <div class="flex space-x-4 items-center">
+                                    <button onclick="triggerFabOption('recommend')"
+                                        class="bg-gray-100 text-gray-700 px-4 py-2 rounded-xl text-xs font-bold shadow-sm cursor-pointer hover:bg-gray-200 transition"><i
+                                            class="fa-solid fa-arrow-left mr-1"></i>返回</button>
+                                    <button onclick="showMapMarkers('spot')"
+                                        class="bg-blue-600 text-white px-5 py-2 rounded-xl text-xs font-bold shadow-md cursor-pointer hover:bg-blue-700 transition"><i
+                                            class="fa-solid fa-camera mr-1"></i>熱門景點</button>
+                                    <button onclick="showMapMarkers('food')"
+                                        class="bg-amber-500 text-white px-5 py-2 rounded-xl text-xs font-bold shadow-md cursor-pointer hover:bg-amber-600 transition"><i
+                                            class="fa-solid fa-utensils mr-1"></i>特色餐廳</button>
+                                    <button onclick="showMapMarkers('activity')"
+                                        class="bg-emerald-600 text-white px-5 py-2 rounded-xl text-xs font-bold shadow-md cursor-pointer hover:bg-emerald-700 transition"><i
+                                            class="fa-solid fa-ticket mr-1"></i>體驗活動</button>
+                                </div>
+                                <div class="relative w-64">
+                                    <input type="text" id="map-search-input"
+                                        onkeypress="if(event.key==='Enter') searchMapRegion(this.value)"
+                                        placeholder="地圖搜尋地區..."
+                                        class="w-full pl-9 pr-4 py-1.5 border border-gray-300 rounded-full text-xs focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                    <i
+                                        class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-gray-400 text-xs"></i>
+                                </div>
+                            </div>
+                            <div class="flex-1 relative w-full h-full">
+                                <iframe id="google-map-iframe" class="w-full h-full border-0" loading="lazy"
+                                    allowfullscreen
+                                    src="https://maps.google.com/maps?q=台灣南部&t=&z=12&ie=UTF8&iwloc=&output=embed"></iframe>
+                                <div id="map-markers-container"
+                                    class="absolute inset-0 pointer-events-none z-10 overflow-hidden"></div>
+                            </div>
+                        </div>
+
+                        <div id="middle-view-region" class="hidden flex-1 overflow-y-auto p-6 space-y-6">
+                            <div class="border-b border-gray-100 pb-4">
+                                <input type="text" onkeypress="if(event.key==='Enter') searchMapRegion(this.value)"
+                                    placeholder="請輸入欲搜尋的地區（如：台南、高雄...）"
+                                    class="w-full max-w-md px-4 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+
+                            <div id="region-level-1" class="space-y-4">
+                                <h4 class="font-bold text-gray-700 text-sm">請選擇南部目標行政區：</h4>
+                                <div class="grid grid-cols-3 gap-4">
+                                    <div onclick="selectRegionDetail('高雄市')"
+                                        class="bg-gray-100 rounded-xl overflow-hidden h-28 relative cursor-pointer group shadow-sm">
+                                        <img src="./高雄市_0.jpg"
+                                            class="w-full h-full object-cover group-hover:scale-105 transition">
+                                        <div class="absolute inset-0 bg-black/30 flex items-center justify-center"><span
+                                                class="text-white font-bold">高雄市</span></div>
+                                    </div>
+                                    <div onclick="selectRegionDetail('屏東縣')"
+                                        class="bg-gray-100 rounded-xl overflow-hidden h-28 relative cursor-pointer group shadow-sm">
+                                        <img src="./屏東縣_0.jpg"
+                                            class="w-full h-full object-cover group-hover:scale-105 transition">
+                                        <div class="absolute inset-0 bg-black/30 flex items-center justify-center"><span
+                                                class="text-white font-bold">屏東縣</span></div>
+                                    </div>
+                                    <div onclick="selectRegionDetail('台南市')"
+                                        class="bg-gray-100 rounded-xl overflow-hidden h-28 relative cursor-pointer group shadow-sm">
+                                        <img src="./台南市_0.jpg"
+                                            class="w-full h-full object-cover group-hover:scale-105 transition">
+                                        <div class="absolute inset-0 bg-black/30 flex items-center justify-center"><span
+                                                class="text-white font-bold">台南市</span></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="region-level-2"
+                                class="hidden bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-3">
+                                <div class="flex justify-between items-center">
+                                    <span id="selected-region-title" class="font-bold text-blue-900 text-sm">高雄市
+                                        細部區域</span>
+                                    <button onclick="backToRegionLevel1()"
+                                        class="text-xs text-blue-600 underline font-medium cursor-pointer">返回重選城市</button>
+                                </div>
+                                <div id="region-level-2-grid"
+                                    class="grid grid-cols-2 gap-2 text-xs text-gray-700 font-medium">
+                                    <!-- 動態生成 -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="absolute bottom-6 left-6 z-20">
+                            <div id="fab-menu"
+                                class="hidden bg-white rounded-2xl shadow-xl border border-gray-100 p-3 mb-3 w-48 flex flex-col space-y-1 text-sm font-medium text-gray-700 animate-fade-in">
+                                <button onclick="triggerFabOption('map')"
+                                    class="w-full text-left px-3 py-2 rounded-lg hover:bg-blue-50 hover:text-blue-700 flex items-center transition cursor-pointer"><i
+                                        class="fa-solid fa-map text-blue-500 mr-2 w-5 text-center"></i>從地圖搜尋</button>
+                                <button onclick="triggerFabOption('region')"
+                                    class="w-full text-left px-3 py-2 rounded-lg hover:bg-amber-50 hover:text-amber-700 flex items-center transition cursor-pointer"><i
+                                        class="fa-solid fa-city text-amber-500 mr-2 w-5 text-center"></i>從區域搜尋</button>
+                                <button onclick="triggerFabOption('pocket')"
+                                    class="w-full text-left px-3 py-2 rounded-lg hover:bg-rose-50 hover:text-rose-700 flex items-center transition cursor-pointer"><i
+                                        class="fa-solid fa-heart text-rose-500 mr-2 w-5 text-center"></i>從收藏選擇</button>
+                            </div>
+                            <button onclick="toggleFabMenu()"
+                                class="w-14 h-14 bg-brand-blue hover:bg-brand-blue-hover text-white rounded-full shadow-xl flex items-center justify-center text-2xl transition transform active:scale-95 cursor-pointer">
+                                <i id="fab-icon" class="fa-solid fa-plus transition-transform duration-200"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 右側面板：包含封面模式、詳細模式，以及新增的功能切換頁籤 -->
+                    <div
+                        class="w-80 md:w-96 bg-gray-50 border-l border-gray-200 flex flex-col overflow-hidden shrink-0">
+                        <!-- 封面模式 -->
+                        <div id="panel-view-cover"
+                            class="flex-1 flex flex-col items-center justify-center p-6 space-y-4">
+                            <img src="./我的星級之旅.jpg"
+                                class="w-full h-48 object-cover rounded-2xl shadow-md border-2 border-white">
+                            <div class="text-center">
+                                <h3 id="cover-trip-name" class="font-bold text-xl text-gray-800 line-clamp-2">我的星級專屬之旅
+                                </h3>
+                                <div class="flex justify-center items-center space-x-2 text-sm text-gray-400 mt-2">
+                                    <span id="cover-trip-date">2026-07-15</span>
+                                    <span>•</span>
+                                    <span id="cover-trip-days">3 天</span>
+                                </div>
+                            </div>
+                            <button onclick="toggleTripDetailView(true)"
+                                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-md transition cursor-pointer mt-4">
+                                <i class="fa-solid fa-plane-departure mr-1"></i>進入行程詳細
+                            </button>
+
+                            <div class="w-full mt-6 text-left flex-1 flex flex-col min-h-0">
+                                <h4 class="text-sm font-bold text-gray-600 mb-2 border-b border-gray-200 pb-1 shrink-0">
+                                    歷史行程紀錄</h4>
+                                <div id="trip-history-list" class="space-y-2 overflow-y-auto no-scrollbar flex-1 pb-4">
+                                    <div class="text-xs text-gray-400 italic">尚未有歷史紀錄</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 詳細模式 (含功能頁籤切換) -->
+                        <div id="panel-view-detail" class="hidden flex-1 flex-col overflow-hidden bg-white">
+                            <div class="p-4 bg-white border-b border-gray-100 shrink-0 relative">
+                                <button onclick="toggleTripDetailView(false)"
+                                    class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition p-1 cursor-pointer"><i
+                                        class="fa-solid fa-arrow-left"></i></button>
+                                <div class="text-center pl-6">
+                                    <h3 id="panel-trip-name" class="font-bold text-gray-800 line-clamp-1">我的星級專屬之旅</h3>
+                                    <div class="flex justify-center items-center space-x-2 text-xs text-gray-400 mt-1">
+                                        <span id="panel-trip-date">2026-07-15</span>
+                                        <span>•</span>
+                                        <span id="panel-trip-days">3 天</span>
+                                    </div>
+                                    <div class="flex justify-center mt-2">
+                                        <button onclick="openExportModal()"
+                                            class="bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 px-3 py-1 rounded-full text-[10px] font-bold transition flex items-center gap-1 cursor-pointer">
+                                            <i class="fa-solid fa-share-nodes"></i> 匯出行程
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 新增：功能切換頁籤 -->
+                            <div class="flex border-b border-gray-100 shrink-0 bg-gray-50 overflow-x-auto no-scrollbar">
+                                <button onclick="switchPlannerTab('timeline')" id="planner-tab-timeline"
+                                    class="flex-1 min-w-[70px] text-[11px] font-bold py-2.5 text-blue-600 border-b-2 border-blue-600 transition text-center cursor-pointer"><i
+                                        class="fa-solid fa-list-ul block mb-1 text-sm"></i>行程</button>
+                                <button onclick="switchPlannerTab('vote')" id="planner-tab-vote"
+                                    class="flex-1 min-w-[70px] text-[11px] font-bold py-2.5 text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition text-center cursor-pointer"><i
+                                        class="fa-solid fa-check-to-slot block mb-1 text-sm"></i>投票</button>
+                                <button onclick="switchPlannerTab('invite')" id="planner-tab-invite"
+                                    class="flex-1 min-w-[70px] text-[11px] font-bold py-2.5 text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition text-center cursor-pointer"><i
+                                        class="fa-solid fa-user-plus block mb-1 text-sm"></i>邀請</button>
+                                <button onclick="switchPlannerTab('budget')" id="planner-tab-budget"
+                                    class="flex-1 min-w-[70px] text-[11px] font-bold py-2.5 text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition text-center cursor-pointer"><i
+                                        class="fa-solid fa-wallet block mb-1 text-sm"></i>記帳</button>
+                            </div>
+
+                            <div class="flex-1 relative overflow-hidden">
+                                <!-- 行程時間軸頁籤內容 -->
+                                <div id="planner-content-timeline"
+                                    class="absolute inset-0 overflow-y-auto no-scrollbar p-4 space-y-6">
+                                    <div id="timeline-scroll-container"></div>
+                                </div>
+
+                                <!-- 投票頁籤內容 -->
+                                <div id="planner-content-vote"
+                                    class="hidden absolute inset-0 overflow-y-auto no-scrollbar p-4 space-y-4 bg-gray-50">
+                                    <!-- 發起投票區塊 -->
+                                    <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                                        <h4 class="font-bold text-sm text-gray-800 mb-1"><i
+                                                class="fa-solid fa-square-poll-horizontal text-cyan-500 mr-1"></i>決策投票
+                                        </h4>
+                                        <p class="text-[10px] text-gray-400 mb-3">打字輸入主題發起投票，讓旅伴們決定！</p>
+                                        <div class="space-y-2">
+                                            <input type="text" id="new-vote-topic-input"
+                                                placeholder="請輸入決策主題（例如：晚餐吃牛肉湯嗎？）"
+                                                class="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition">
+                                            <button onclick="addNewVoteTopic()"
+                                                class="w-full bg-cyan-600 hover:bg-cyan-700 text-white text-xs font-bold py-2 rounded-lg transition cursor-pointer shadow-sm shadow-cyan-100 flex items-center justify-center gap-1">
+                                                <i class="fa-solid fa-plus"></i> 發起新投票
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- 投票清單與統計結果 -->
+                                    <div id="vote-list-container" class="space-y-4">
+                                        <!-- 動態渲染投票卡片 -->
+                                    </div>
+
+                                    <!-- 全域投票統計總覽 -->
+                                    <div id="vote-global-stats"
+                                        class="hidden bg-white rounded-xl p-4 shadow-sm border border-gray-100 space-y-3">
+                                        <!-- 動態渲染全域統計 -->
+                                    </div>
+                                </div>
+
+                                <!-- 邀請頁籤內容 -->
+                                <div id="planner-content-invite"
+                                    class="hidden absolute inset-0 overflow-y-auto no-scrollbar p-4 space-y-4 bg-gray-50">
+                                    <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                                        <h4 class="font-bold text-sm text-gray-800 mb-1"><i
+                                                class="fa-solid fa-users text-blue-500 mr-1"></i>協作者</h4>
+                                        <p class="text-[10px] text-gray-400 mb-3">邀請朋友一起編輯行程</p>
+                                        <div class="flex space-x-2 mb-3">
+                                            <input type="email" id="invite-email-input" placeholder="輸入好友 Email..."
+                                                class="flex-1 border border-gray-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                                            <button onclick="alert('邀請已發送至該 Email！')"
+                                                class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm transition cursor-pointer shrink-0">
+                                                發送
+                                            </button>
+                                        </div>
+                                        <button onclick="copyShareLink()"
+                                            class="w-full bg-blue-50 text-blue-700 text-xs font-bold py-2 rounded-lg border border-blue-100 hover:bg-blue-100 transition mb-3 cursor-pointer"><i
+                                                class="fa-solid fa-link mr-1"></i>複製邀請連結</button>
+                                        <div class="border-t border-gray-100 pt-3">
+                                            <h5 class="text-[10px] font-bold text-gray-500 mb-2">目前成員 (2)</h5>
+                                            <div class="space-y-2" id="member-list-container">
+                                                <div class="flex items-center justify-between">
+                                                    <div class="flex items-center space-x-2">
+                                                        <div
+                                                            class="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 text-[10px] font-bold">
+                                                            我</div>
+                                                        <span class="text-xs text-gray-700">郭佳瑜 (建立者)</span>
+                                                    </div>
+                                                </div>
+                                                <div class="flex items-center justify-between group"
+                                                    id="member-row-xiaoming">
+                                                    <div class="flex items-center space-x-2">
+                                                        <div
+                                                            class="w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 text-[10px] font-bold">
+                                                            小</div>
+                                                        <span class="text-xs text-gray-700">小明</span>
+                                                    </div>
+                                                    <button onclick="confirmRemoveMember('xiaoming')"
+                                                        class="text-[10px] text-gray-400 hover:text-rose-500 transition cursor-pointer px-2 py-1 border border-transparent hover:border-rose-200 rounded">移除</button>
+                                                </div>
+                                                <div id="member-removed-xiaoming"
+                                                    class="hidden items-center justify-between bg-rose-50 p-2 rounded-lg text-[10px] border border-rose-100">
+                                                    <span class="text-rose-600 font-bold"><i
+                                                            class="fa-solid fa-user-minus mr-1"></i>已暫時移除 小明 權限</span>
+                                                    <button onclick="undoRemoveMember('xiaoming')"
+                                                        class="text-blue-600 font-bold hover:text-blue-800 cursor-pointer px-2 py-1 bg-white rounded border border-blue-200 shadow-sm transition">復原</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <script>
+                                            function confirmRemoveMember(memberId) {
+                                                if (confirm('警告：確定要移除該成員的編輯權限嗎？')) {
+                                                    document.getElementById('member-row-' + memberId).classList.add('hidden');
+                                                    document.getElementById('member-removed-' + memberId).classList.remove('hidden');
+                                                    document.getElementById('member-removed-' + memberId).classList.add('flex');
+                                                }
+                                            }
+                                            function undoRemoveMember(memberId) {
+                                                document.getElementById('member-removed-' + memberId).classList.add('hidden');
+                                                document.getElementById('member-removed-' + memberId).classList.remove('flex');
+                                                document.getElementById('member-row-' + memberId).classList.remove('hidden');
+                                            }
+                                        </script>
+                                    </div>
+                                </div>
+
+                                <!-- 記帳頁籤內容 -->
+                                <div id="planner-content-budget"
+                                    class="hidden absolute inset-0 overflow-y-auto no-scrollbar p-4 space-y-4 bg-gray-50">
+                                    <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                                        <div class="flex justify-between items-center mb-3">
+                                            <h4 class="font-bold text-sm text-gray-800"><i
+                                                    class="fa-solid fa-wallet text-emerald-500 mr-1"></i>總花費 / 預算</h4>
+                                            <div class="flex items-center space-x-2">
+                                                <span id="trip-total-cost" class="font-extrabold text-emerald-600">NT$ 0</span>
+                                                <span class="text-gray-400">/</span>
+                                                <div class="flex items-center" id="budget-input-container">
+                                                    <input type="number" id="trip-budget-input" placeholder="輸入預算" class="w-20 border border-gray-200 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                                                    <button onclick="setTripBudget()" class="ml-1 bg-gray-200 hover:bg-gray-300 text-gray-700 text-[10px] px-2 py-1 rounded transition cursor-pointer">確認</button>
+                                                </div>
+                                                <span id="trip-budget-display" class="font-extrabold text-gray-600 hidden">NT$ 0</span>
+                                            </div>
+                                        </div>
+                                        <div class="space-y-2">
+                                            <input type="text" id="expense-name" placeholder="項目名稱 (如：台鐵票)"
+                                                class="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                            <div class="flex space-x-2">
+                                                <input type="number" id="expense-amount" placeholder="金額"
+                                                    class="w-1/3 border border-gray-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                                <select id="expense-type"
+                                                    class="w-1/3 border border-gray-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                                    <option value="" disabled selected>類型</option>
+                                                    <option value="交通">交通</option>
+                                                    <option value="餐飲">餐飲</option>
+                                                    <option value="住宿">住宿</option>
+                                                    <option value="門票">門票</option>
+                                                    <option value="其他">其他</option>
+                                                </select>
+                                                <select id="expense-payer"
+                                                    class="w-1/3 border border-gray-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                                    <option value="" disabled selected>付款人</option>
+                                                    <option value="我">我</option>
+                                                    <option value="小明">小明</option>
+                                                </select>
+                                            </div>
+                                            <button onclick="addExpenseRecord()"
+                                                class="w-full bg-emerald-500 text-white text-xs font-bold py-2 rounded-lg hover:bg-emerald-600 transition cursor-pointer shadow-sm">新增花費</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- 記帳紀錄列表 -->
+                                    <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                                        <h5 class="font-bold text-xs text-gray-700 mb-3 border-b border-gray-100 pb-2">
+                                            花費明細</h5>
+                                        <div id="expense-records-list" class="space-y-2">
+                                            <div class="text-center text-[10px] text-gray-400 py-2"
+                                                id="empty-expense-msg">目前尚無記帳紀錄</div>
+                                        </div>
+                                    </div>
+
+                                    <script>
+                                        let totalCost = 0;
+                                        let tripBudget = null;
+
+                                        function setTripBudget() {
+                                            const budgetInput = document.getElementById('trip-budget-input');
+                                            const budgetVal = parseInt(budgetInput.value);
+                                            if (!budgetVal || budgetVal < 0) {
+                                                alert('請輸入有效的預算金額！');
+                                                return;
+                                            }
+                                            tripBudget = budgetVal;
+                                            document.getElementById('budget-input-container').classList.add('hidden');
+                                            const display = document.getElementById('trip-budget-display');
+                                            display.innerText = 'NT$ ' + tripBudget.toLocaleString();
+                                            display.classList.remove('hidden');
+                                            checkBudgetLimit();
+                                        }
+
+                                        function checkBudgetLimit() {
+                                            if (tripBudget !== null && totalCost > tripBudget) {
+                                                alert('已超出預算');
+                                            }
+                                        }
+
+                                        function addExpenseRecord() {
+                                            const name = document.getElementById('expense-name').value;
+                                            const amount = parseInt(document.getElementById('expense-amount').value);
+                                            const type = document.getElementById('expense-type').value;
+                                            const payer = document.getElementById('expense-payer').value;
+
+                                            if (!name || !amount || !type || !payer) {
+                                                alert('請完整填寫項目名稱、金額、類型與付款人！');
+                                                return;
+                                            }
+
+                                            totalCost += amount;
+                                            document.getElementById('trip-total-cost').innerText = 'NT$ ' + totalCost.toLocaleString();
+                                            checkBudgetLimit();
+
+                                            const list = document.getElementById('expense-records-list');
+                                            const emptyMsg = document.getElementById('empty-expense-msg');
+                                            if (emptyMsg) emptyMsg.remove();
+
+                                            const recordHTML = `
+                                                <div class="flex justify-between items-center p-2 bg-gray-50 rounded-lg border border-gray-100">
+                                                    <div class="flex flex-col">
+                                                        <span class="text-xs font-bold text-gray-800">${name}</span>
+                                                        <span class="text-[10px] text-gray-500">${type} • 由 ${payer} 付款</span>
+                                                    </div>
+                                                    <span class="text-xs font-bold text-emerald-600">NT$ ${amount.toLocaleString()}</span>
+                                                </div>
+                                            `;
+                                            list.insertAdjacentHTML('afterbegin', recordHTML);
+
+                                            document.getElementById('expense-name').value = '';
+                                            document.getElementById('expense-amount').value = '';
+                                            document.getElementById('expense-type').selectedIndex = 0;
+                                            document.getElementById('expense-payer').selectedIndex = 0;
+                                        }
+                                    </script>
+                                </div>
+                            </div>
+
+                            <div class="p-4 bg-white border-t border-gray-100 shrink-0 space-y-3 z-10">
+                                <button onclick="createNewTrip()"
+                                    class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl shadow-md transition cursor-pointer text-sm">
+                                    <i class="fa-solid fa-plus mr-1"></i>建立新行程
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                    function switchPlannerTab(tabName) {
+                        // Reset all tabs
+                        ['timeline', 'vote', 'invite', 'budget'].forEach(t => {
+                            const btn = document.getElementById('planner-tab-' + t);
+                            if (btn) {
+                                btn.classList.remove('text-blue-600', 'border-blue-600');
+                                btn.classList.add('text-gray-400', 'border-transparent');
+                            }
+                            const content = document.getElementById('planner-content-' + t);
+                            if (content) content.classList.add('hidden');
+                        });
+
+                        // Set active tab
+                        const activeBtn = document.getElementById('planner-tab-' + tabName);
+                        if (activeBtn) {
+                            activeBtn.classList.remove('text-gray-400', 'border-transparent');
+                            activeBtn.classList.add('text-blue-600', 'border-blue-600');
+                        }
+                        const activeContent = document.getElementById('planner-content-' + tabName);
+                        if (activeContent) {
+                            activeContent.classList.remove('hidden');
+                        }
+
+                        // Rerender tab-specific contents
+                        if (tabName === 'vote') {
+                            if (typeof renderVotes === 'function') renderVotes();
+                        }
+                    }
+                </script>
+            </section>
+
+            <section id="page-social-wall"
+                class="page-section hidden max-w-3xl mx-auto px-6 py-8 space-y-6 animate-fade-in">
+                <div class="bg-white rounded-2xl shadow-sm p-4 border border-gray-100 space-y-3">
+                    <div class="flex items-start space-x-3">
+                        <img id="post-user-avatar"
+                            src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80"
+                            class="w-10 h-10 rounded-full object-cover border border-amber-300">
+                        <div class="flex-1 space-y-2">
+                            <textarea id="post-textarea" placeholder="分享你的旅遊靈感與冒險故事..."
+                                class="w-full min-h-[80px] p-2 text-sm text-gray-700 bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none border border-gray-200"></textarea>
+                            <div id="post-image-preview-container" class="relative hidden inline-block">
+                                <img id="post-image-preview" src="" class="max-h-40 rounded-lg object-cover">
+                                <button onclick="clearPostImage()"
+                                    class="absolute top-1 right-1 bg-black/50 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-black/70"><i
+                                        class="fa-solid fa-xmark"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center pt-2 border-t border-gray-50">
+                        <div class="flex space-x-4 text-gray-400 text-sm">
+                            <input type="file" id="post-image-input" accept="image/*" class="hidden"
+                                onchange="previewPostImage(this)">
+                            <button onclick="document.getElementById('post-image-input').click()"
+                                class="hover:text-blue-600 transition"><i class="fa-solid fa-image mr-1"></i>相片</button>
+                            <button onclick="insertHashtag()" class="hover:text-amber-500 transition"><i
+                                    class="fa-solid fa-hashtag mr-1"></i>標籤</button>
+                        </div>
+                        <button onclick="createNewPost()"
+                            class="bg-brand-blue hover:bg-brand-blue-hover text-white font-bold text-xs px-4 py-2 rounded-xl shadow-md transition cursor-pointer">
+                            分享想法
+                        </button>
+                    </div>
+                </div>
+
+                <div id="social-feed-container" class="space-y-4">
+                    <!-- 動態牆內容由 JS 渲染 -->
+                </div>
+            </section>
+
+            <section id="page-explore"
+                class="page-section hidden max-w-4xl mx-auto px-6 py-8 space-y-6 animate-fade-in">
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center space-x-3">
+                    <div class="w-1/4 relative">
+                        <select id="explore-region-select" onchange="handleExploreRegionChange()"
+                            class="w-full appearance-none bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none">
+                            <option value="高雄市">高雄市</option>
+                            <option value="屏東縣">屏東縣</option>
+                            <option value="臺南市">臺南市</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute right-3 top-3 text-xs text-gray-400"></i>
+                    </div>
+                    <div class="flex-1 relative">
+                        <input id="explore-search-input" type="text"
+                            onkeypress="if(event.key==='Enter') executeExploreSearch(this.value)"
+                            placeholder="輸入關鍵字搜尋周邊驚喜..."
+                            class="w-full pl-4 pr-10 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <i onclick="alert('語音辨識功能啟動中...請對麥克風說話')"
+                            class="fa-solid fa-microphone absolute right-3 top-2.5 text-gray-400 hover:text-blue-600 text-base cursor-pointer"></i>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-5 gap-3">
+                    <button onclick="filterExploreCategory('station')"
+                        class="explore-tab-btn bg-white hover:bg-blue-50 border border-gray-100 p-3 rounded-xl flex flex-col items-center justify-center transition shadow-sm font-semibold text-gray-700 cursor-pointer">
+                        <i class="fa-solid fa-train-subway text-xl text-blue-600 mb-1"></i><span
+                            class="text-xs">車站</span>
+                    </button>
+                    <button onclick="filterExploreCategory('spot')"
+                        class="explore-tab-btn bg-white hover:bg-blue-50 border border-gray-100 p-3 rounded-xl flex flex-col items-center justify-center transition shadow-sm font-semibold text-gray-700 cursor-pointer">
+                        <i class="fa-solid fa-camera-retro text-xl text-emerald-600 mb-1"></i><span
+                            class="text-xs">景點</span>
+                    </button>
+                    <button onclick="filterExploreCategory('food')"
+                        class="explore-tab-btn bg-white hover:bg-blue-50 border border-gray-100 p-3 rounded-xl flex flex-col items-center justify-center transition shadow-sm font-semibold text-gray-700 cursor-pointer">
+                        <i class="fa-solid fa-bowl-food text-xl text-amber-500 mb-1"></i><span class="text-xs">美食</span>
+                    </button>
+                    <button onclick="filterExploreCategory('hotel')"
+                        class="explore-tab-btn bg-white hover:bg-blue-50 border border-gray-100 p-3 rounded-xl flex flex-col items-center justify-center transition shadow-sm font-semibold text-gray-700 cursor-pointer">
+                        <i class="fa-solid fa-bed text-xl text-indigo-600 mb-1"></i><span class="text-xs">住宿</span>
+                    </button>
+                    <button onclick="alert('載入更多分類選項...')"
+                        class="bg-white hover:bg-blue-50 border border-gray-100 p-3 rounded-xl flex flex-col items-center justify-center transition shadow-sm font-semibold text-gray-700 cursor-pointer">
+                        <i class="fa-solid fa-ellipsis text-xl text-gray-500 mb-1"></i><span class="text-xs">更多</span>
+                    </button>
+                </div>
+
+                <!-- 地圖區塊：支援地區跳轉 + 上方標記層 -->
+                <div class="space-y-2">
+                    <div class="flex items-center space-x-2">
+                        <input id="explore-region-jump-input" type="text"
+                            onkeypress="if(event.key==='Enter') jumpExploreMapRegion(this.value)"
+                            placeholder="輸入地區來跳轉地圖（如：屏東、台南...)）"
+                            class="flex-1 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm">
+                        <button
+                            onclick="jumpExploreMapRegion(document.getElementById('explore-region-jump-input').value)"
+                            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition shadow-sm cursor-pointer">
+                            <i class="fa-solid fa-magnifying-glass mr-1"></i>跳轉
+                        </button>
+                    </div>
+                    <div class="relative w-full h-80 rounded-2xl overflow-hidden shadow-sm border border-gray-100">
+                        <iframe id="explore-google-map-iframe" class="w-full h-full border-0" loading="lazy"
+                            allowfullscreen
+                            src="https://maps.google.com/maps?q=高雄市 景點&t=&z=13&ie=UTF8&iwloc=&output=embed"></iframe>
+                        <div id="explore-map-markers-container"
+                            class="absolute inset-0 pointer-events-none z-10 overflow-hidden"></div>
+                    </div>
+                </div>
+
+                <div id="explore-results-grid" class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                </div>
+            </section>
+
+            <section id="page-member-center"
+                class="page-section hidden max-w-4xl mx-auto px-6 py-8 space-y-6 animate-fade-in">
+                <div
+                    class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 flex justify-between items-center">
+                    <div class="flex items-center space-x-4">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80"
+                            class="w-16 h-16 rounded-full object-cover border-2 border-brand-yellow shadow-md">
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-800">郭佳瑜 (Guo Jiayu)</h2>
+                            <p class="text-xs text-gray-400 mt-1">尊榮黃金會員 • 探索足跡 12 縣市</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-6 pr-4">
+                        <div class="flex space-x-6 text-center">
+                            <div><span class="block text-xl font-bold text-blue-900">1.2k</span><span
+                                    class="text-xs text-gray-400">粉絲數</span></div>
+                            <div class="w-[1px] bg-gray-200 h-8 self-center"></div>
+                            <div><span class="block text-xl font-bold text-blue-900">385</span><span
+                                    class="text-xs text-gray-400">追蹤中</span></div>
+                        </div>
+                        <button onclick="handleLogout()"
+                            class="bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-2 rounded-xl text-sm font-bold transition cursor-pointer shadow-sm">
+                            <i class="fa-solid fa-right-from-bracket mr-1"></i>登出
+                        </button>
+                    </div>
+                </div>
+
+                <div class="border-b border-gray-200 flex space-x-6 text-sm font-bold">
+                    <button onclick="switchMemberTab('trips')" id="tab-btn-trips"
+                        class="pb-3 border-b-2 border-blue-600 text-blue-600 px-1 cursor-pointer">我的行程</button>
+                    <button onclick="switchMemberTab('posts')" id="tab-btn-posts"
+                        class="pb-3 border-b-2 border-transparent text-gray-400 hover:text-gray-600 px-1 cursor-pointer">精選貼文</button>
+                    <button onclick="switchMemberTab('favorites')" id="tab-btn-favorites"
+                        class="pb-3 border-b-2 border-transparent text-gray-400 hover:text-gray-600 px-1 cursor-pointer">口袋收藏清單</button>
+                </div>
+
+                <div id="member-tab-content">
+                    <div id="member-subtab-trips" class="member-subtab relative min-h-[300px]">
+                        <!-- 行程列表 -->
+                        <div id="member-trip-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div onclick="showMemberTripDetails()"
+                                class="bg-white p-4 rounded-xl border border-gray-100 flex justify-between items-center shadow-sm hover:shadow-md hover:border-blue-300 transition cursor-pointer group">
+                                <div class="flex items-center space-x-3">
+                                    <div
+                                        class="w-12 h-12 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center">
+                                        <i class="fa-solid fa-umbrella-beach text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <h4
+                                            class="font-bold text-gray-800 text-sm group-hover:text-blue-600 transition">
+                                            經典回顧：熱情南台灣三日遊</h4>
+                                        <p class="text-xs text-gray-400 mt-0.5">3 天 • 高雄、墾丁</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span
+                                        class="text-xs bg-emerald-50 text-emerald-600 font-bold px-2 py-1 rounded-lg">已完成</span>
+                                    <i class="fa-solid fa-chevron-right text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 歷史行程詳細資料 (預設隱藏) -->
+                        <div id="member-trip-details-view"
+                            class="hidden absolute inset-0 bg-white z-10 flex flex-col rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                            <!-- 頂部導航 -->
+                            <div
+                                class="p-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between shrink-0">
+                                <div class="flex items-center gap-3">
+                                    <button onclick="hideMemberTripDetails()"
+                                        class="text-gray-400 hover:text-gray-600 p-1 cursor-pointer transition"><i
+                                            class="fa-solid fa-arrow-left"></i></button>
+                                    <div>
+                                        <h4 class="font-bold text-gray-800 text-sm">經典回顧：熱情南台灣三日遊</h4>
+                                        <p class="text-[10px] text-gray-500">3 天 • 高雄、墾丁 • 已完成</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 功能頁籤 -->
+                            <div class="flex border-b border-gray-100 shrink-0 bg-white">
+                                <button onclick="switchMemberTripDetailTab('timeline')" id="member-detail-tab-timeline"
+                                    class="flex-1 py-2 text-xs font-bold text-blue-600 border-b-2 border-blue-600 transition cursor-pointer">行程</button>
+                                <button onclick="switchMemberTripDetailTab('vote')" id="member-detail-tab-vote"
+                                    class="flex-1 py-2 text-xs font-bold text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition cursor-pointer">投票</button>
+                                <button onclick="switchMemberTripDetailTab('invite')" id="member-detail-tab-invite"
+                                    class="flex-1 py-2 text-xs font-bold text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition cursor-pointer">邀請</button>
+                                <button onclick="switchMemberTripDetailTab('budget')" id="member-detail-tab-budget"
+                                    class="flex-1 py-2 text-xs font-bold text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition cursor-pointer">花費</button>
+                            </div>
+
+                            <!-- 頁籤內容區 -->
+                            <div class="flex-1 overflow-y-auto p-4 bg-gray-50 relative">
+                                <!-- 行程 -->
+                                <div id="member-detail-content-timeline" class="absolute inset-0 p-4 overflow-y-auto">
+                                    <div class="space-y-4">
+                                        <div class="border-l-2 border-blue-300 pl-4 relative">
+                                            <div class="absolute w-3 h-3 bg-blue-500 rounded-full -left-[7px] top-1">
+                                            </div>
+                                            <h5 class="text-xs font-bold text-gray-800">第一天 - 高雄市區</h5>
+                                            <p class="text-[10px] text-gray-500">駁二藝術特區、六合夜市</p>
+                                        </div>
+                                        <div class="border-l-2 border-blue-300 pl-4 relative">
+                                            <div class="absolute w-3 h-3 bg-blue-500 rounded-full -left-[7px] top-1">
+                                            </div>
+                                            <h5 class="text-xs font-bold text-gray-800">第二天 - 墾丁海岸</h5>
+                                            <p class="text-[10px] text-gray-500">南灣玩水、墾丁大街</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- 投票 -->
+                                <div id="member-detail-content-vote"
+                                    class="hidden absolute inset-0 p-4 overflow-y-auto">
+                                    <div class="bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
+                                        <h5 class="text-xs font-bold text-gray-800 mb-2">晚餐吃什麼？</h5>
+                                        <div class="space-y-2 text-[10px]">
+                                            <div class="flex justify-between text-blue-600 bg-blue-50 p-1.5 rounded">
+                                                <span class="font-bold">丹丹漢堡 (勝)</span><span>3 票</span>
+                                            </div>
+                                            <div class="flex justify-between text-gray-600 bg-gray-50 p-1.5 rounded">
+                                                <span>海產店</span><span>1 票</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- 邀請 -->
+                                <div id="member-detail-content-invite"
+                                    class="hidden absolute inset-0 p-4 overflow-y-auto">
+                                    <div class="bg-white p-3 rounded-xl border border-gray-100 shadow-sm space-y-2">
+                                        <h5 class="text-xs font-bold text-gray-800 border-b border-gray-100 pb-2">參與成員
+                                        </h5>
+                                        <div class="flex items-center space-x-2">
+                                            <div
+                                                class="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 text-[10px] font-bold">
+                                                我</div>
+                                            <span class="text-[10px] text-gray-700">郭佳瑜 (建立者)</span>
+                                        </div>
+                                        <div class="flex items-center space-x-2">
+                                            <div
+                                                class="w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 text-[10px] font-bold">
+                                                小</div>
+                                            <span class="text-[10px] text-gray-700">小明</span>
+                                        </div>
+                                        <div class="flex items-center space-x-2">
+                                            <div
+                                                class="w-6 h-6 rounded-full bg-rose-100 flex items-center justify-center text-rose-700 text-[10px] font-bold">
+                                                阿</div>
+                                            <span class="text-[10px] text-gray-700">阿華</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- 花費 -->
+                                <div id="member-detail-content-budget"
+                                    class="hidden absolute inset-0 p-4 overflow-y-auto">
+                                    <div class="bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
+                                        <div
+                                            class="flex justify-between items-center mb-3 border-b border-gray-100 pb-2">
+                                            <span class="text-xs font-bold text-gray-800">總花費</span>
+                                            <span class="text-sm font-bold text-emerald-600">NT$ 12,500</span>
+                                        </div>
+                                        <div class="space-y-2">
+                                            <div
+                                                class="flex justify-between items-center p-1.5 bg-gray-50 rounded border border-gray-100">
+                                                <div class="flex flex-col">
+                                                    <span class="text-[10px] font-bold text-gray-800">台鐵來回票</span>
+                                                    <span class="text-[9px] text-gray-500">交通 • 由 我 付款</span>
+                                                </div>
+                                                <span class="text-[10px] font-bold text-emerald-600">NT$ 5,960</span>
+                                            </div>
+                                            <div
+                                                class="flex justify-between items-center p-1.5 bg-gray-50 rounded border border-gray-100">
+                                                <div class="flex flex-col">
+                                                    <span class="text-[10px] font-bold text-gray-800">墾丁民宿兩晚</span>
+                                                    <span class="text-[9px] text-gray-500">住宿 • 由 小明 付款</span>
+                                                </div>
+                                                <span class="text-[10px] font-bold text-emerald-600">NT$ 6,540</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <script>
+                        function showMemberTripDetails() {
+                            document.getElementById('member-trip-list').classList.add('hidden');
+                            document.getElementById('member-trip-details-view').classList.remove('hidden');
+                            switchMemberTripDetailTab('timeline'); // 預設顯示行程
+                        }
+
+                        function hideMemberTripDetails() {
+                            document.getElementById('member-trip-list').classList.remove('hidden');
+                            document.getElementById('member-trip-details-view').classList.add('hidden');
+                        }
+
+                        function switchMemberTripDetailTab(tabName) {
+                            ['timeline', 'vote', 'invite', 'budget'].forEach(t => {
+                                const btn = document.getElementById('member-detail-tab-' + t);
+                                if (btn) {
+                                    btn.classList.remove('text-blue-600', 'border-blue-600');
+                                    btn.classList.add('text-gray-400', 'border-transparent');
+                                }
+                                const content = document.getElementById('member-detail-content-' + t);
+                                if (content) content.classList.add('hidden');
+                            });
+
+                            const activeBtn = document.getElementById('member-detail-tab-' + tabName);
+                            if (activeBtn) {
+                                activeBtn.classList.remove('text-gray-400', 'border-transparent');
+                                activeBtn.classList.add('text-blue-600', 'border-blue-600');
+                            }
+                            const activeContent = document.getElementById('member-detail-content-' + tabName);
+                            if (activeContent) activeContent.classList.remove('hidden');
+                        }
+                    </script>
+
+
+
+                    <div id="member-subtab-posts" class="member-subtab hidden space-y-4">
+                        <div class="text-center py-8 text-gray-400 text-sm"><i
+                                class="fa-regular fa-folder-open text-2xl block mb-2"></i>目前尚無個人精選貼文</div>
+                    </div>
+
+                    <div id="member-subtab-favorites" class="member-subtab hidden space-y-6">
+                        <!-- 景點收藏 -->
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center border-b border-gray-100 pb-2">
+                                <h4 class="font-bold text-xs text-gray-700 flex items-center gap-1"><i
+                                        class="fa-solid fa-map-location-dot text-rose-500"></i>景點收藏清單</h4>
+                                <button onclick="addNewFavoriteSpotPrompt()"
+                                    class="bg-amber-400 hover:bg-amber-500 text-gray-800 font-bold text-[10px] px-2.5 py-1.5 rounded-lg shadow transition cursor-pointer"><i
+                                        class="fa-solid fa-plus mr-1"></i>自訂新增景點</button>
+                            </div>
+                            <div id="favorite-spots-render-container" class="space-y-2"></div>
+                        </div>
+
+                        <!-- 房源收藏 -->
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center border-b border-gray-100 pb-2">
+                                <h4 class="font-bold text-xs text-gray-700 flex items-center gap-1"><i
+                                        class="fa-solid fa-hotel text-blue-500"></i>房源收藏清單</h4>
+                                <span class="text-[10px] text-gray-400">房源可在住宿專區中點選心形圖示收藏</span>
+                            </div>
+                            <div id="favorite-hotels-render-container" class="space-y-2"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="page-login"
+                class="page-section hidden flex items-center justify-center h-full animate-fade-in">
+                <div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 w-96 my-20 mx-auto">
+                    <div class="flex mb-6 border-b border-gray-200">
+                        <button id="tab-login" onclick="toggleAuthView('login')"
+                            class="flex-1 pb-2 text-center font-bold text-blue-600 border-b-2 border-blue-600 transition cursor-pointer">登入</button>
+                        <button id="tab-register" onclick="toggleAuthView('register')"
+                            class="flex-1 pb-2 text-center font-bold text-gray-400 hover:text-gray-600 border-b-2 border-transparent transition cursor-pointer">註冊</button>
+                    </div>
+
+                    <!-- 登入表單 -->
+                    <div id="view-login" class="space-y-4">
+                        <div class="text-center mb-4">
+                            <p class="text-sm text-gray-500">登入後即可建立行程與使用動態牆功能</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">用戶名稱</label>
+                            <input type="text" id="login-name"
+                                class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="例如：郭佳瑜">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">密碼</label>
+                            <input type="password" id="login-password"
+                                class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="請輸入密碼">
+                        </div>
+                        <button onclick="handleRealLogin()"
+                            class="w-full bg-brand-blue hover:bg-brand-blue-hover text-white font-bold py-3 rounded-xl shadow-md transition cursor-pointer mt-4">
+                            確認登入
+                        </button>
+                    </div>
+
+                    <!-- 註冊表單 -->
+                    <div id="view-register" class="space-y-4 hidden">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">手機號碼或Email</label>
+                            <input type="text" id="register-account"
+                                class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="輸入手機號碼或 Email">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">用戶名稱</label>
+                            <input type="text" id="register-name"
+                                class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="設定您的名稱">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">密碼</label>
+                            <input type="password" id="register-password"
+                                class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="設定一組密碼">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">上傳頭貼</label>
+                            <input type="file" id="register-avatar" accept="image/*"
+                                class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
+                        </div>
+                        <button onclick="handleRegister()"
+                            class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-md transition cursor-pointer mt-4">
+                            立即註冊
+                        </button>
+
+                        <div class="relative flex py-2 items-center">
+                            <div class="flex-grow border-t border-gray-200"></div>
+                            <span class="flex-shrink-0 mx-4 text-gray-400 text-xs">或使用第三方平台註冊</span>
+                            <div class="flex-grow border-t border-gray-200"></div>
+                        </div>
+
+                        <div class="flex space-x-3">
+                            <button onclick="alert('Google 註冊/登入功能建置中...')"
+                                class="flex-1 flex items-center justify-center border border-gray-300 rounded-xl py-2.5 hover:bg-gray-50 transition cursor-pointer">
+                                <i class="fa-brands fa-google text-red-500 mr-2 text-lg"></i>
+                                <span class="text-sm font-bold text-gray-700">Google</span>
+                            </button>
+                            <button onclick="alert('Apple 註冊/登入功能建置中...')"
+                                class="flex-1 flex items-center justify-center border border-gray-300 rounded-xl py-2.5 hover:bg-gray-50 transition cursor-pointer">
+                                <i class="fa-brands fa-apple text-gray-800 mr-2 text-lg"></i>
+                                <span class="text-sm font-bold text-gray-700">Apple</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="page-accommodation" class="page-section hidden h-full animate-fade-in">
+                <div id="accommodation-container" class="h-full flex flex-col overflow-hidden"></div>
+            </section>
+
+            <section id="page-my-bookings" class="page-section hidden animate-fade-in">
+                <div id="my-bookings-container" class="max-w-4xl mx-auto px-6 py-8 space-y-6"></div>
+            </section>
+
+        </main>
+    </div>
+
+    <div id="explore-modal"
+        class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 animate-fade-in">
+        <div
+            class="bg-white rounded-2xl max-w-sm w-full mx-4 p-6 shadow-2xl space-y-4 border border-gray-100 transform scale-100 transition-all">
+            <div class="flex justify-between items-start">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center text-amber-600"><i
+                            class="fa-solid fa-location-dot"></i></div>
+                    <h3 id="modal-spot-title" class="font-bold text-gray-800 text-base">探索地點</h3>
+                </div>
+                <button onclick="closeExploreModal()" class="text-gray-400 hover:text-gray-600 cursor-pointer"><i
+                        class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <p class="text-sm text-gray-500 leading-relaxed">已被多位趣趣旅人收錄。請問要將此推薦地點加入您的個人珍藏或行程規劃中嗎？</p>
+            <div class="grid grid-cols-2 gap-3 pt-2">
+                <button onclick="handleModalAction('fav')"
+                    class="border-2 border-rose-500 text-rose-500 hover:bg-rose-50 font-bold py-2.5 rounded-xl text-xs transition cursor-pointer flex items-center justify-center"><i
+                        class="fa-solid fa-heart mr-1"></i>愛心收藏</button>
+                <button onclick="handleModalAction('trip')"
+                    class="bg-brand-blue hover:bg-brand-blue-hover text-white font-bold py-2.5 rounded-xl text-xs transition cursor-pointer flex items-center justify-center"><i
+                        class="fa-solid fa-calendar-plus mr-1"></i>加入行程</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="booking-modal"
+        class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 animate-fade-in">
+        <div id="booking-modal-content"
+            class="bg-white rounded-2xl max-w-lg w-full mx-4 shadow-2xl border border-gray-100 modal-enter"></div>
+    </div>
+
+    <div id="review-modal"
+        class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 animate-fade-in">
+        <div id="review-modal-content"
+            class="bg-white rounded-2xl max-w-md w-full mx-4 shadow-2xl border border-gray-100 modal-enter"></div>
+    </div>
+
+    <!-- 行程靈感右側抽屜 -->
+    <div id="inspiration-drawer-backdrop"
+        class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-50 opacity-0 transition-opacity duration-300 pointer-events-none"
+        onclick="closeInspirationDrawer()">
+        <div id="inspiration-drawer"
+            class="fixed right-0 top-0 bottom-0 w-[420px] max-w-full bg-white shadow-2xl flex flex-col z-50 transform translate-x-full transition-transform duration-300 ease-out border-l border-gray-100"
+            onclick="event.stopPropagation()">
+            <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-lightbulb text-amber-500 text-lg"></i>
+                    <h3 class="font-bold text-gray-800 text-base">主題行程靈感</h3>
+                </div>
+                <button onclick="closeInspirationDrawer()"
+                    class="text-gray-400 hover:text-gray-600 cursor-pointer transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto space-y-4 flex-1">
+                <p class="text-xs text-gray-400 mb-2">點擊下方精選主題行程，將為您快速帶入預設路線並開始自由編輯！</p>
+
+                <!-- 主題一 -->
+                <div onclick="selectInspiration('tainan')"
+                    class="group p-4 bg-white border border-gray-200 rounded-2xl hover:border-blue-500 hover:shadow-md transition cursor-pointer flex gap-4">
+                    <img src="https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=150&q=80"
+                        class="w-20 h-20 object-cover rounded-xl shrink-0 group-hover:scale-105 transition duration-300">
+                    <div class="flex flex-col justify-between flex-1">
+                        <div>
+                            <h4 class="font-bold text-gray-800 text-sm group-hover:text-blue-600 transition">台南古蹟與文青美食漫遊
+                            </h4>
+                            <p class="text-[11px] text-gray-400 mt-1">天數：3 天 | 精選 4 個節點</p>
+                        </div>
+                        <span class="text-[10px] text-blue-600 font-bold flex items-center gap-1">一鍵帶入 <i
+                                class="fa-solid fa-arrow-right"></i></span>
+                    </div>
+                </div>
+
+                <!-- 主題二 -->
+                <div onclick="selectInspiration('kenting')"
+                    class="group p-4 bg-white border border-gray-200 rounded-2xl hover:border-blue-500 hover:shadow-md transition cursor-pointer flex gap-4">
+                    <img src="https://images.unsplash.com/photo-1540959733332-eab4deceeaf7?auto=format&fit=crop&w=150&q=80"
+                        class="w-20 h-20 object-cover rounded-xl shrink-0 group-hover:scale-105 transition duration-300">
+                    <div class="flex flex-col justify-between flex-1">
+                        <div>
+                            <h4 class="font-bold text-gray-800 text-sm group-hover:text-blue-600 transition">
+                                墾丁陽光海灘與國家公園探險</h4>
+                            <p class="text-[11px] text-gray-400 mt-1">天數：3 天 | 精選 4 個節點</p>
+                        </div>
+                        <span class="text-[10px] text-blue-600 font-bold flex items-center gap-1">一鍵帶入 <i
+                                class="fa-solid fa-arrow-right"></i></span>
+                    </div>
+                </div>
+
+                <!-- 主題三 -->
+                <div onclick="selectInspiration('kaohsiung')"
+                    class="group p-4 bg-white border border-gray-200 rounded-2xl hover:border-blue-500 hover:shadow-md transition cursor-pointer flex gap-4">
+                    <img src="https://images.unsplash.com/photo-1569336415962-a4bd9f69cd83?auto=format&fit=crop&w=150&q=80"
+                        class="w-20 h-20 object-cover rounded-xl shrink-0 group-hover:scale-105 transition duration-300">
+                    <div class="flex flex-col justify-between flex-1">
+                        <div>
+                            <h4 class="font-bold text-gray-800 text-sm group-hover:text-blue-600 transition">
+                                高雄港灣夜景與藝文新地標</h4>
+                            <p class="text-[11px] text-gray-400 mt-1">天數：2 天 | 精選 3 個節點</p>
+                        </div>
+                        <span class="text-[10px] text-blue-600 font-bold flex items-center gap-1">一鍵帶入 <i
+                                class="fa-solid fa-arrow-right"></i></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 查詢車次 Modal -->
+    <div id="train-modal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 animate-fade-in"
+        onclick="closeTrainModal()">
+        <div class="bg-white rounded-2xl max-w-md w-full mx-4 shadow-2xl border border-gray-100 p-6 space-y-4 modal-enter"
+            onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+                <h3 class="font-bold text-gray-800 text-base flex items-center gap-2">
+                    <i class="fa-solid fa-train text-emerald-600"></i> 查詢台鐵車次
+                </h3>
+                <button onclick="closeTrainModal()" class="text-gray-400 hover:text-gray-600 cursor-pointer"><i
+                        class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <div class="space-y-3">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 mb-1">出發地</label>
+                        <select id="train-dep"
+                            class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                            <option value="台南">台南</option>
+                            <option value="新左營">新左營</option>
+                            <option value="高雄">高雄</option>
+                            <option value="屏東">屏東</option>
+                            <option value="潮州">潮州</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 mb-1">目的地</label>
+                        <select id="train-arr"
+                            class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                            <option value="高雄" selected>高雄</option>
+                            <option value="台南">台南</option>
+                            <option value="新左營">新左營</option>
+                            <option value="屏東">屏東</option>
+                            <option value="潮州">潮州</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-1">車次種類</label>
+                    <div class="flex gap-4">
+                        <label class="flex items-center gap-1.5 text-xs text-gray-700 cursor-pointer">
+                            <input type="radio" name="train-type" value="thsr" checked class="accent-emerald-600"> 台鐵區間/區間快車
+                        </label>
+                        <label class="flex items-center gap-1.5 text-xs text-gray-700 cursor-pointer">
+                            <input type="radio" name="train-type" value="tra" class="accent-emerald-600"> 台鐵對號列車 (自強/普悠瑪)
+                        </label>
+                    </div>
+                </div>
+
+                <button onclick="searchTrainSchedule()"
+                    class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs transition cursor-pointer flex items-center justify-center gap-1">
+                    <i class="fa-solid fa-magnifying-glass"></i> 開始查詢
+                </button>
+            </div>
+
+            <!-- 查詢結果區 -->
+            <div id="train-results" class="hidden space-y-2.5 border-t border-gray-100 pt-4">
+                <!-- 搜尋中動畫 -->
+                <div id="train-loading" class="flex flex-col items-center py-6 gap-2">
+                    <div class="w-8 h-8 rounded-full border-4 border-emerald-100 border-t-emerald-600 animate-spin">
+                    </div>
+                    <span class="text-[10px] text-gray-400 font-medium">即時車次查詢中...</span>
+                </div>
+
+                <!-- 實際車次列表 -->
+                <div id="train-list" class="hidden space-y-2 max-h-60 overflow-y-auto pr-1"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 匯出行程 Modal -->
+    <div id="export-modal"
+        class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 animate-fade-in"
+        onclick="closeExportModal()">
+        <div class="bg-white rounded-2xl max-w-md w-full mx-4 shadow-2xl border border-gray-100 p-6 space-y-4 modal-enter"
+            onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+                <h3 class="font-bold text-gray-800 text-base flex items-center gap-2">
+                    <i class="fa-solid fa-share-nodes text-blue-600"></i> 匯出與分享行程
+                </h3>
+                <button onclick="closeExportModal()" class="text-gray-400 hover:text-gray-600 cursor-pointer"><i
+                        class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <div class="space-y-4">
+                <div class="bg-gray-50 rounded-xl p-3.5 border border-gray-100 max-h-60 overflow-y-auto">
+                    <h4 id="export-trip-title" class="font-bold text-xs text-gray-800 mb-2">我的精彩旅程</h4>
+                    <div id="export-trip-timeline" class="space-y-2 text-[11px] text-gray-600"></div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="copyShareLink()"
+                        class="bg-white hover:bg-gray-50 border-2 border-blue-600 text-blue-600 font-bold py-2.5 rounded-xl text-xs transition cursor-pointer flex items-center justify-center gap-1">
+                        <i class="fa-solid fa-link"></i> 複製分享連結
+                    </button>
+                    <button onclick="downloadTripPDF()"
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl text-xs transition cursor-pointer flex items-center justify-center gap-1">
+                        <i class="fa-solid fa-file-pdf"></i> 下載 PDF 電子檔
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="state.js"></script>
+    <script src="persistence.js"></script>
+    <script src="uiUtils.js"></script>
+    <script src="authRouter.js"></script>
+    <script src="explore.js"></script>
+    <script src="itinerarySystem.js"></script>
+    <script src="tripPlanner.js"></script>
+    <script src="socialWall.js"></script>
+    <script src="accommodation.js"></script>
+    <script src="ticketing.js"></script>
+    <script src="ticketingUI.js"></script>
+    <script src="memberCenter.js"></script>
+    <script>
+        // === 所有狀態變數已移至 state.js 統一管理 ===
+
+        // --- 初始化配置 ---
+        window.onload = function () {
+            // 1. 嘗試從 localStorage 載入持久化資料
+            const restored = AppPersistence.load();
+
+            // 2. 如果已登入狀態被還原，同步更新 Header UI
+            if (restored && isLoggedIn && currentUser) {
+                const loginBtn = document.getElementById('header-login-btn');
+                if (loginBtn) {
+                    loginBtn.className = "flex items-center space-x-2 cursor-pointer p-1 rounded-full hover:bg-gray-100 transition";
+                    loginBtn.onclick = () => switchPage('member-center');
+                    loginBtn.innerHTML = `
+                        <img src="${currentUser.avatar}" class="w-8 h-8 rounded-full object-cover border border-amber-300">
+                        <span class="text-sm font-bold text-gray-700">${currentUser.name}</span>
+                    `;
+                }
+                // 更新會員中心資料
+                const memberCenterName = document.querySelector('#page-member-center h2');
+                const memberCenterAvatar = document.querySelector('#page-member-center img');
+                if (memberCenterName) memberCenterName.innerText = currentUser.name;
+                if (memberCenterAvatar) memberCenterAvatar.src = currentUser.avatar;
+
+                showToastNotification(`歡迎回來，${currentUser.name}！`, 'success');
+            }
+
+            // 3. 初始渲染所有頁面元件
+            switchPage('home');
+            renderFavoriteSpots();
+            renderFavoriteHotels();
+            filterExploreCategory('station');
+            renderSocialPosts();
+            renderAccommodationPage();
+            renderMyBookingsPage();
+            renderMemberBookings();
+        };
+
+
+
+        function handleRegister() {
+            const account = document.getElementById('register-account').value.trim();
+            const name = document.getElementById('register-name').value.trim();
+            const password = document.getElementById('register-password').value;
+            const avatarInput = document.getElementById('register-avatar');
+
+            if (!account || !name || !password) {
+                alert('請填寫手機號碼/Email、用戶名稱與密碼！');
+                return;
+            }
+
+            if (registeredUsers.find(u => u.name === name)) {
+                alert('此用戶名稱已被註冊，請更換一個名稱！');
+                return;
+            }
+
+            let avatarUrl = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80"; // 預設頭貼
+
+            if (avatarInput.files && avatarInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    avatarUrl = e.target.result;
+                    finishRegistration(name, password, avatarUrl);
+                }
+                reader.readAsDataURL(avatarInput.files[0]);
+            } else {
+                finishRegistration(name, password, avatarUrl);
+            }
+        }
+
+        function finishRegistration(name, password, avatarUrl) {
+            registeredUsers.push({ name, password, avatar: avatarUrl });
+            AppPersistence.autoSave();
+            alert('註冊成功！請使用新帳號登入。');
+            toggleAuthView('login');
+            document.getElementById('login-name').value = name;
+            document.getElementById('login-password').value = "";
+            document.getElementById('register-name').value = "";
+            document.getElementById('register-password').value = "";
+            document.getElementById('register-avatar').value = "";
+        }
+
+        function handleRealLogin() {
+            const name = document.getElementById('login-name').value.trim();
+            const password = document.getElementById('login-password').value;
+
+            const user = registeredUsers.find(u => u.name === name && u.password === password);
+            if (!user) {
+                alert('登入失敗，名稱或密碼錯誤！');
+                return;
+            }
+
+            isLoggedIn = true;
+            currentUser = user;
+
+            // 更新 header 按鈕
+            const loginBtn = document.getElementById('header-login-btn');
+            loginBtn.className = "flex items-center space-x-2 cursor-pointer p-1 rounded-full hover:bg-gray-100 transition";
+            loginBtn.onclick = () => switchPage('member-center');
+            loginBtn.innerHTML = `
+                <img src="${user.avatar}" class="w-8 h-8 rounded-full object-cover border border-amber-300">
+                <span class="text-sm font-bold text-gray-700">${user.name}</span>
+            `;
+
+            // 更新會員中心資料
+            const memberCenterName = document.querySelector('#page-member-center h2');
+            const memberCenterAvatar = document.querySelector('#page-member-center img');
+            if (memberCenterName) memberCenterName.innerText = user.name;
+            if (memberCenterAvatar) memberCenterAvatar.src = user.avatar;
+
+            // 跳回首頁
+            switchPage('home');
+            AppPersistence.autoSave();
+        }
+
+        function handleLogout() {
+            isLoggedIn = false;
+            currentUser = null;
+
+            // 復原 header 按鈕
+            const loginBtn = document.getElementById('header-login-btn');
+            loginBtn.className = "bg-brand-blue hover:bg-brand-blue-hover text-white px-5 py-2 rounded-xl text-sm font-medium transition cursor-pointer shadow-md shadow-blue-100";
+            loginBtn.onclick = () => switchPage('login');
+            loginBtn.innerHTML = "登入 / 註冊";
+
+            alert('您已成功登出。');
+            switchPage('home');
+            AppPersistence.autoSave();
+        }
+
+        // --- 2. 建立行程模組邏輯 ---
+        function submitTripSpecs() {
+            currentTrip.name = document.getElementById('input-trip-name').value || "我的精彩假期";
+            currentTrip.days = parseInt(document.getElementById('input-trip-days').value);
+            currentTrip.date = document.getElementById('input-trip-date').value || new Date().toISOString().split('T')[0];
+            currentTrip.spots = []; // 重置行程節點
+
+            // 更新規劃看版文字
+            document.getElementById('panel-trip-name').innerText = currentTrip.name;
+            document.getElementById('panel-trip-date').innerText = currentTrip.date;
+            document.getElementById('panel-trip-days').innerText = `${currentTrip.days} 天`;
+            document.getElementById('cover-trip-name').innerText = currentTrip.name;
+            document.getElementById('cover-trip-date').innerText = currentTrip.date;
+            document.getElementById('cover-trip-days').innerText = `${currentTrip.days} 天`;
+
+            // 切換至階段 B 規劃工作區
+            document.getElementById('trip-step-a').classList.add('hidden');
+            document.getElementById('trip-step-b').classList.remove('hidden');
+
+            renderTimeline();
+        }
+
+
+
+
+        // 懸浮大按鈕選單控制
+        function toggleFabMenu() {
+            const menu = document.getElementById('fab-menu');
+            const icon = document.getElementById('fab-icon');
+            menu.classList.toggle('hidden');
+            icon.classList.toggle('rotate-45');
+        }
+
+        function triggerFabOption(type) {
+            toggleFabMenu(); // 關閉選單
+
+            // 關閉特定口袋名單拉頁
+            closePocketDrawer();
+
+            // 隱藏核心中間操作區的三種模式面板
+            document.getElementById('middle-view-recommend').classList.add('hidden');
+            document.getElementById('middle-view-map').classList.add('hidden');
+            document.getElementById('middle-view-region').classList.add('hidden');
+
+            if (type === 'map') {
+                document.getElementById('middle-view-map').classList.remove('hidden');
+            } else if (type === 'region') {
+                document.getElementById('middle-view-region').classList.remove('hidden');
+                backToRegionLevel1();
+            } else if (type === 'pocket') {
+                document.getElementById('middle-view-map').classList.remove('hidden'); // 切回地圖底圖
+                openPocketDrawer();
+            } else if (type === 'recommend') {
+                document.getElementById('middle-view-recommend').classList.remove('hidden');
+            }
+        }
+
+        // openPocketDrawer 已統一使用下方含雙頁籤的版本
+
+        function closePocketDrawer() {
+            document.getElementById('pocket-drawer').style.width = "0px";
+        }
+
+        // regionData 已移至 state.js
+
+        function selectRegionDetail(cityName) {
+            document.getElementById('region-level-1').classList.add('hidden');
+            const level2 = document.getElementById('region-level-2');
+            level2.classList.remove('hidden');
+            document.getElementById('selected-region-title').innerText = `${cityName} 特選極致區鄉街道`;
+
+            const grid = document.getElementById('region-level-2-grid');
+            if (regionData[cityName]) {
+                grid.innerHTML = regionData[cityName].map(district => `
+                    <div onclick="searchMapRegion('${cityName} ${district}')" class="p-2.5 bg-white border border-gray-200 rounded-lg hover:bg-amber-50 cursor-pointer transition">📍 ${district}</div>
+                `).join('');
+            }
+        }
+
+        function renderMapOverlayResults(query) {
+            const overlay = document.getElementById('map-overlay-results');
+            if (overlay) {
+                overlay.classList.remove('hidden');
+                overlay.innerHTML = `
+                    <div class="p-3 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-xl">
+                        <span class="text-xs font-bold text-gray-600">「${query}」附近推薦</span>
+                        <button onclick="document.getElementById('map-overlay-results').classList.add('hidden')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                    <div class="p-2 space-y-2">
+                        <div onclick="openExploreModal('${query} 推薦地點 A')" class="p-2 hover:bg-blue-50 rounded-lg cursor-pointer transition flex items-center space-x-3 border border-transparent hover:border-blue-100">
+                            <div class="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center shrink-0"><i class="fa-solid fa-location-dot"></i></div>
+                            <div class="flex-1 min-w-0">
+                                <h4 class="font-bold text-sm text-gray-800 truncate">${query} 推薦地點 A</h4>
+                                <p class="text-[10px] text-gray-400">熱門精選</p>
+                            </div>
+                        </div>
+                        <div onclick="openExploreModal('${query} 推薦地點 B')" class="p-2 hover:bg-amber-50 rounded-lg cursor-pointer transition flex items-center space-x-3 border border-transparent hover:border-amber-100">
+                            <div class="w-8 h-8 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center shrink-0"><i class="fa-solid fa-star"></i></div>
+                            <div class="flex-1 min-w-0">
+                                <h4 class="font-bold text-sm text-gray-800 truncate">${query} 推薦地點 B</h4>
+                                <p class="text-[10px] text-gray-400">在地人推</p>
+                            </div>
+                        </div>
+                        <div onclick="openExploreModal('${query} 推薦地點 C')" class="p-2 hover:bg-emerald-50 rounded-lg cursor-pointer transition flex items-center space-x-3 border border-transparent hover:border-emerald-100">
+                            <div class="w-8 h-8 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center shrink-0"><i class="fa-solid fa-camera"></i></div>
+                            <div class="flex-1 min-w-0">
+                                <h4 class="font-bold text-sm text-gray-800 truncate">${query} 推薦地點 C</h4>
+                                <p class="text-[10px] text-gray-400">網美打卡</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function searchMapRegion(query) {
+            if (!query) return;
+            currentSearchRegion = query.split(' ')[0];
+            const iframe = document.getElementById('google-map-iframe');
+            if (iframe) {
+                iframe.src = `https://maps.google.com/maps?q=${encodeURIComponent(query)}&t=&z=13&ie=UTF8&iwloc=&output=embed`;
+            }
+            // 清除所有的 markers
+            const container = document.getElementById('map-markers-container');
+            if (container) container.innerHTML = '';
+
+            // 切換至地圖視圖
+            document.getElementById('middle-view-recommend').classList.add('hidden');
+            document.getElementById('middle-view-region').classList.add('hidden');
+            document.getElementById('middle-view-map').classList.remove('hidden');
+        }
+
+        function showMapMarkers(category) {
+            const container = document.getElementById('map-markers-container');
+            if (!container) return;
+
+            container.innerHTML = '';
+
+            let iconClass = 'fa-location-dot';
+            let colorClass = 'bg-rose-500 text-white';
+            let categoryName = '景點';
+
+            if (category === 'spot') {
+                iconClass = 'fa-camera';
+                colorClass = 'bg-blue-600 text-white';
+                categoryName = '熱門景點';
+            } else if (category === 'food') {
+                iconClass = 'fa-utensils';
+                colorClass = 'bg-amber-500 text-white';
+                categoryName = '特色餐廳';
+            } else if (category === 'activity') {
+                iconClass = 'fa-ticket';
+                colorClass = 'bg-emerald-600 text-white';
+                categoryName = '體驗活動';
+            }
+
+            // 產生隨機 5 個 marker
+            for (let i = 1; i <= 5; i++) {
+                // 將坐標設定在中心附近隨機散佈 (20% 到 80% 的區間，避開邊緣)
+                const top = 20 + Math.random() * 60;
+                const left = 20 + Math.random() * 60;
+
+                const marker = document.createElement('div');
+                marker.className = `absolute pointer-events-auto transform -translate-x-1/2 -translate-y-full cursor-pointer group hover:z-20 transition animate-fade-in`;
+                marker.style.top = `${top}%`;
+                marker.style.left = `${left}%`;
+                marker.setAttribute('onclick', `openExploreModal('${currentSearchRegion || "此區域"} 精選${categoryName} ${i}')`);
+
+                marker.innerHTML = `
+                    <div class="relative flex flex-col items-center">
+                        <div class="px-2 py-1 bg-white border border-gray-200 shadow-md rounded-lg text-xs font-bold text-gray-800 whitespace-nowrap opacity-0 group-hover:opacity-100 transition translate-y-2 group-hover:translate-y-0 absolute bottom-full mb-1">
+                            ${currentSearchRegion || "此區域"} 精選${categoryName} ${i}
+                        </div>
+                        <div class="w-8 h-8 rounded-full ${colorClass} shadow-lg flex items-center justify-center border-2 border-white">
+                            <i class="fa-solid ${iconClass}"></i>
+                        </div>
+                        <div class="w-2 h-2 ${colorClass} rotate-45 -mt-1.5 z-[-1]"></div>
+                    </div>
+                `;
+                container.appendChild(marker);
+            }
+        }
+
+        function toggleTripDetailView(showDetail) {
+            if (showDetail) {
+                document.getElementById('panel-view-cover').classList.add('hidden');
+                document.getElementById('panel-view-detail').classList.remove('hidden');
+                document.getElementById('panel-view-detail').classList.add('flex');
+            } else {
+                document.getElementById('panel-view-cover').classList.remove('hidden');
+                document.getElementById('panel-view-detail').classList.add('hidden');
+                document.getElementById('panel-view-detail').classList.remove('flex');
+            }
+        }
+
+        function renderTripHistory() {
+            const list = document.getElementById('trip-history-list');
+            if (!list) return;
+            if (tripHistory.length === 0) {
+                list.innerHTML = `<div class="text-xs text-gray-400 italic">尚未有歷史紀錄</div>`;
+                return;
+            }
+            list.innerHTML = tripHistory.map((trip, idx) => `
+                <div class="bg-white p-2 rounded-lg border border-gray-100 shadow-sm text-xs cursor-pointer hover:bg-gray-50 transition mb-2" onclick="alert('載入歷史行程：${trip.name}')">
+                    <div class="font-bold text-gray-800 truncate">${trip.name}</div>
+                    <div class="text-[10px] text-gray-400 mt-1">${trip.date} • ${trip.days} 天 • ${trip.spots.length} 個景點</div>
+                </div>
+            `).join('');
+        }
+
+        function createNewTrip() {
+            if (currentTrip.spots.length > 0 || currentTrip.name !== "我的夢幻海島之旅") {
+                tripHistory.push(JSON.parse(JSON.stringify(currentTrip)));
+            }
+            document.getElementById('trip-step-b').classList.add('hidden');
+            document.getElementById('trip-step-a').classList.remove('hidden');
+            toggleTripDetailView(false);
+            renderTripHistory();
+            currentTrip = { name: "我的夢幻海島之旅", days: 3, date: "2026-07-15", spots: [] };
+        }
+
+        function backToRegionLevel1() {
+            document.getElementById('region-level-1').classList.remove('hidden');
+            document.getElementById('region-level-2').classList.add('hidden');
+        }
+
+
+
+        // --- 3. 動態牆互動模組 ---
+        // (currentPostImage 已移至 state.js)
+
+
+        function previewPostImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    currentPostImage = e.target.result;
+                    document.getElementById('post-image-preview').src = currentPostImage;
+                    document.getElementById('post-image-preview-container').classList.remove('hidden');
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function clearPostImage() {
+            currentPostImage = "";
+            document.getElementById('post-image-input').value = "";
+            document.getElementById('post-image-preview-container').classList.add('hidden');
+        }
+
+        function insertHashtag() {
+            const textarea = document.getElementById('post-textarea');
+            textarea.value += "#";
+            textarea.focus();
+        }
+
+        function formatHashtags(text) {
+            return text.replace(/(#\S+)/g, '<span class="text-blue-800 font-bold">$1</span>');
+        }
+
+
+
+
+
+
+
+        function addComment(postId) {
+            if (!isLoggedIn) { alert("請先登入！"); return; }
+            const input = document.getElementById(`comment-input-${postId}`);
+            const text = input.value.trim();
+            if (text) {
+                const post = socialPosts.find(p => p.id === postId);
+                post.comments.push({ author: currentUser.name, avatar: currentUser.avatar, text });
+                renderSocialPosts();
+                document.getElementById(`comments-section-${postId}`).classList.remove('hidden');
+            }
+        }
+
+        function editPost(postId) {
+            document.getElementById(`post-content-view-${postId}`).classList.add('hidden');
+            document.getElementById(`post-edit-view-${postId}`).classList.remove('hidden');
+        }
+
+        function cancelEditPost(postId) {
+            document.getElementById(`post-content-view-${postId}`).classList.remove('hidden');
+            document.getElementById(`post-edit-view-${postId}`).classList.add('hidden');
+        }
+
+        function saveEditPost(postId) {
+            const newText = document.getElementById(`edit-textarea-${postId}`).value;
+            const post = socialPosts.find(p => p.id === postId);
+            if (post) {
+                post.text = newText;
+                renderSocialPosts();
+            }
+        }
+
+        function deletePost(postId) {
+            if (confirm("確定要刪除這篇貼文嗎？")) {
+                socialPosts = socialPosts.filter(p => p.id !== postId);
+                renderSocialPosts();
+            }
+        }
+
+        function toggleFollow(btn) {
+            if (btn.innerText === "追蹤") {
+                btn.innerText = "已追蹤";
+                btn.className = "text-xs font-bold text-white bg-blue-600 border border-blue-600 px-3 py-1 rounded-full transition";
+            } else {
+                btn.innerText = "追蹤";
+                btn.className = "text-xs font-bold text-blue-600 border border-blue-600 px-3 py-1 rounded-full hover:bg-blue-50 transition";
+            }
+        }
+
+        function syncMemberPosts(text) {
+            const container = document.getElementById('member-subtab-posts');
+            if (container.innerText.includes('目前尚無個人精選貼文')) { container.innerHTML = ""; }
+
+            container.innerHTML += `
+                <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm space-y-2">
+                    <p class="text-xs text-gray-400 font-medium">發布時間：2026年最新分享</p>
+                    <p class="text-sm text-gray-700">${text}</p>
+                </div>
+            `;
+        }
+
+
+        // --- 4. 探索周圍模組 ---
+
+        // 地區下拉選單變更時：更新地圖跳轉 + 清除標記 + 顯示預設清單
+        function handleExploreRegionChange() {
+            const region = document.getElementById('explore-region-select').value;
+            jumpExploreMapRegion(region);
+            filterExploreCategory('default', region);
+        }
+
+        // 地圖搜尋框「跳轉」：只移動地圖，清除標記，不重置快捷鍵
+        function jumpExploreMapRegion(query) {
+            if (!query || !query.trim()) return;
+            const region = query.trim().split(' ')[0];
+            // 同步更新下拉選單（如果有對應的 option）
+            const select = document.getElementById('explore-region-select');
+            if (select) {
+                for (let opt of select.options) {
+                    if (opt.value.includes(region) || region.includes(opt.value.replace(/[市縣]/, ''))) {
+                        select.value = opt.value;
+                        break;
+                    }
+                }
+            }
+            const iframe = document.getElementById('explore-google-map-iframe');
+            if (iframe) {
+                iframe.src = `https://maps.google.com/maps?q=${encodeURIComponent(query.trim())}&t=&z=13&ie=UTF8&iwloc=&output=embed`;
+            }
+            // 清除標記層
+            const mc = document.getElementById('explore-map-markers-container');
+            if (mc) mc.innerHTML = '';
+        }
+
+
+
+        // 在探索頁地圖上方的覆蓋層顯示分類圖釘（地圖不移動）
+        function showExploreMapMarkers(category, region) {
+            const container = document.getElementById('explore-map-markers-container');
+            if (!container) return;
+            container.innerHTML = '';
+
+            const config = {
+                station: { icon: 'fa-train-subway', colorClass: 'bg-blue-600 text-white', label: '車站' },
+                spot: { icon: 'fa-camera', colorClass: 'bg-emerald-500 text-white', label: '景點' },
+                food: { icon: 'fa-utensils', colorClass: 'bg-amber-500 text-white', label: '美食' },
+                hotel: { icon: 'fa-bed', colorClass: 'bg-purple-600 text-white', label: '住宿' }
+            };
+            const cfg = config[category] || { icon: 'fa-location-dot', colorClass: 'bg-rose-500 text-white', label: '地點' };
+
+            const count = category === 'station' ? 3 : 5;
+            for (let i = 1; i <= count; i++) {
+                const top = 15 + Math.random() * 65;
+                const left = 15 + Math.random() * 70;
+                const spotName = `${region} 精選${cfg.label} ${i}`;
+
+                const marker = document.createElement('div');
+                marker.className = 'absolute pointer-events-auto transform -translate-x-1/2 -translate-y-full cursor-pointer group hover:z-20 animate-fade-in';
+                marker.style.top = `${top}%`;
+                marker.style.left = `${left}%`;
+                marker.setAttribute('onclick', `openExploreModal('${spotName}')`);
+                marker.innerHTML = `
+                    <div class="relative flex flex-col items-center">
+                        <div class="px-2 py-1 bg-white border border-gray-200 shadow-md rounded-lg text-xs font-bold text-gray-800 whitespace-nowrap
+                                    opacity-0 group-hover:opacity-100 transition-all translate-y-1 group-hover:translate-y-0 absolute bottom-full mb-1 pointer-events-none z-10">
+                            ${spotName}
+                        </div>
+                        <div class="w-9 h-9 rounded-full ${cfg.colorClass} shadow-lg flex items-center justify-center border-2 border-white hover:scale-110 transition-transform">
+                            <i class="fa-solid ${cfg.icon} text-sm"></i>
+                        </div>
+                        <div class="w-2.5 h-2.5 ${cfg.colorClass} rotate-45 -mt-1.5"></div>
+                    </div>
+                `;
+                container.appendChild(marker);
+            }
+        }
+
+        // 搜尋框關鍵字搜尋（取消快捷鍵高亮，更新地圖，顯示自訂清單）
+        function executeExploreSearch(query) {
+            if (!query || !query.trim()) return;
+            const iframe = document.getElementById('explore-google-map-iframe');
+            if (iframe) {
+                iframe.src = `https://maps.google.com/maps?q=${encodeURIComponent(query.trim())}&t=&z=14&ie=UTF8&iwloc=&output=embed`;
+            }
+            // 清除標記
+            const mc = document.getElementById('explore-map-markers-container');
+            if (mc) mc.innerHTML = '';
+            // 移除快捷鍵高亮
+            document.querySelectorAll('.explore-tab-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white', 'hover:bg-blue-700');
+                btn.classList.add('bg-white', 'text-gray-700', 'hover:bg-blue-50');
+            });
+            currentExploreCategory = null;
+            // 動態清單
+            const grid = document.getElementById('explore-results-grid');
+            const q = query.trim();
+            grid.innerHTML = [
+                { label: '推薦地點 A', bg: 'bg-blue-50', icon: 'fa-star', color: 'text-blue-600', sub: '熱門精選' },
+                { label: '推薦地點 B', bg: 'bg-amber-50', icon: 'fa-heart', color: 'text-amber-500', sub: '在地人推' },
+                { label: '推薦地點 C', bg: 'bg-emerald-50', icon: 'fa-camera', color: 'text-emerald-600', sub: '網美打卡' }
+            ].map(item => `
+                <div onclick="openExploreModal('${q} ${item.label}')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition cursor-pointer flex flex-col justify-between h-36 group">
+                    <div class="flex items-start justify-between">
+                        <div class="${item.bg} w-10 h-10 rounded-xl flex items-center justify-center group-hover:scale-110 transition">
+                            <i class="fa-solid ${item.icon} text-lg ${item.color}"></i>
+                        </div>
+                        <span class="text-[10px] bg-gray-100 text-gray-500 font-bold px-2 py-0.5 rounded">點擊探索</span>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-gray-800 text-sm group-hover:text-blue-700 transition line-clamp-1">${q} ${item.label}</h4>
+                        <p class="text-xs text-gray-400 mt-1">${item.sub}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openExploreModal(spotName) {
+            selectedModalSpotName = spotName;
+            document.getElementById('modal-spot-title').innerText = spotName;
+            document.getElementById('explore-modal').classList.remove('hidden');
+        }
+
+        function closeExploreModal() {
+            document.getElementById('explore-modal').classList.add('hidden');
+        }
+
+
+
+
+
+
+        // ==========================================
+        // 住宿專區與訂房流程優化完整實作邏輯
+        // ==========================================
+
+
+
+        // 初始化日期搜尋預設值
+        function initSearchDates() {
+            if (!accomSearch.checkIn || !accomSearch.checkOut) {
+                let today = new Date();
+                let tomorrow = new Date(today);
+                tomorrow.setDate(today.getDate() + 1);
+                let nextDay = new Date(today);
+                nextDay.setDate(today.getDate() + 2);
+                accomSearch.checkIn = tomorrow.toISOString().split('T')[0];
+                accomSearch.checkOut = nextDay.toISOString().split('T')[0];
+            }
+        }
+
+        // 1. 渲染「房源搜尋與訂房工作區（住宿專區）」頁面
+
+
+        function getFilteredHotels() {
+            return hotelDatabase.filter(hotel => {
+                // 相容層：支持舊資料格式(pricePerNight)和新格式(price)
+                const price = hotel.pricePerNight || hotel.price || hotel.priceWeekday || 0;
+
+                // 價格過濾
+                if (accomFilters.minPrice && price < accomFilters.minPrice) return false;
+                if (accomFilters.maxPrice && price > accomFilters.maxPrice) return false;
+
+                // 評分過濾
+                if (accomFilters.minRating && hotel.rating < accomFilters.minRating) return false;
+
+                // 房型過濾
+                if (accomFilters.roomType) {
+                    const typeStr = hotel.type || hotel.roomType || '';
+                    const types = hotel.roomTypes || [typeStr];
+                    const matchesType = typeStr.includes(accomFilters.roomType) ||
+                        types.some(rt => rt.includes(accomFilters.roomType));
+                    if (!matchesType) return false;
+                }
+
+                // 設備過濾
+                const amenities = hotel.amenities || [];
+                if (accomFilters.wifi && !amenities.includes('WiFi')) return false;
+                if (accomFilters.pool && !amenities.includes('泳池')) return false;
+
+                return true;
+            });
+        }
+
+        function renderHotelCards(hotels) {
+            if (hotels.length === 0) {
+                return `
+                    <div class="col-span-full bg-white rounded-2xl border border-gray-200 p-12 text-center flex flex-col items-center justify-center space-y-4">
+                        <div class="w-16 h-16 bg-gray-50 text-gray-400 rounded-full flex items-center justify-center">
+                            <i class="fa-solid fa-bed text-3xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-gray-800 text-base">查無符合房源，請重新調整篩選條件</h4>
+                            <p class="text-xs text-gray-400 mt-1">您可以點擊下方按鈕或右上角「重設搜尋」放寬條件</p>
+                        </div>
+                        <button onclick="resetHotelSearch()" class="bg-brand-blue hover:bg-brand-blue-hover text-white px-5 py-2 rounded-xl text-xs font-bold transition shadow-md shadow-blue-100">
+                            重設搜尋條件
+                        </button>
+                    </div>
+                `;
+            }
+
+            return hotels.map(hotel => {
+                // 相容層：支持舊新資料格式
+                const priceDisplay = hotel.pricePerNight || hotel.price || hotel.priceWeekday || 0;
+                const locationDisplay = hotel.location || hotel.region || '未設定';
+                const typeDisplay = hotel.type || hotel.roomType || '自訂房型';
+                const stockVal = 99; // 應要求，取消滿房顯示，強制給予充足庫存數字
+                const isFav = favoriteHotels.some(h => h.id === hotel.id);
+                return `
+                    <div onclick="showHotelDetail('${hotel.id}')" data-hotel-id="${hotel.id}" class="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md border border-gray-100 transition cursor-pointer group flex flex-col relative ${selectedHotelId === hotel.id ? 'ring-2 ring-blue-600' : ''}">
+                        <div class="relative h-44 overflow-hidden">
+                            <img src="${hotel.image || ''}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500${stockVal === 0 ? ' opacity-60' : ''}">
+                            ${stockVal === 0 ? '<div class="absolute inset-0 bg-black/30 flex items-center justify-center"><span class="bg-rose-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-lg">已滿房</span></div>' : ''}
+                            <button onclick="event.stopPropagation(); toggleHotelFavorite('${hotel.id}')" class="absolute top-3 right-3 bg-white/90 hover:bg-white text-gray-600 p-2 rounded-full shadow-md hover:scale-110 transition z-10">
+                                <i class="fa-${isFav ? 'solid text-rose-500' : 'regular'} fa-heart"></i>
+                            </button>
+                            <span class="absolute bottom-3 left-3 bg-black/60 text-white text-[10px] font-bold px-2 py-1 rounded">
+                                ${typeDisplay}
+                            </span>
+                        </div>
+                        <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
+                            <div>
+                                <div class="flex justify-between items-start">
+                                    <h4 class="font-bold text-gray-800 text-sm group-hover:text-blue-700 transition line-clamp-1">${hotel.name}</h4>
+                                    <span class="text-amber-500 font-bold text-xs shrink-0"><i class="fa-solid fa-star text-[10px] mr-0.5"></i> ${hotel.rating || 5.0}</span>
+                                </div>
+                                <p class="text-[10px] text-gray-400 mt-1"><i class="fa-solid fa-location-dot text-gray-400 mr-0.5"></i> ${locationDisplay}</p>
+                            </div>
+                            <div class="flex justify-between items-center border-t border-gray-50 pt-2.5">
+                                <span class="text-xs text-gray-400">剩餘空房：${stockVal === 0 ? '<span class="font-bold text-rose-500">已滿房</span>' : '<span class="font-bold ' + (stockVal <= 1 ? 'text-rose-500' : stockVal <= 3 ? 'text-amber-600' : 'text-gray-700') + '">' + stockVal + ' 間</span>'}</span>
+                                <span class="font-bold text-blue-900 text-sm">NT$ ${priceDisplay.toLocaleString()} <span class="text-[10px] text-gray-400 font-normal">/晚</span></span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 房源詳細面板
+
+
+        function getAmenityIcon(amenity) {
+            const icons = {
+                'WiFi': '<i class="fa-solid fa-wifi text-[9px]"></i>',
+                '泳池': '<i class="fa-solid fa-water-ladder text-[9px]"></i>',
+                '健身房': '<i class="fa-solid fa-dumbbell text-[9px]"></i>',
+                '早餐': '<i class="fa-solid fa-coffee text-[9px]"></i>',
+                '停車場': '<i class="fa-solid fa-square-p text-[9px]"></i>',
+                '24H櫃台': '<i class="fa-solid fa-clock text-[9px]"></i>',
+                '海景陽台': '<i class="fa-solid fa-umbrella-beach text-[9px]"></i>',
+                'BBQ區': '<i class="fa-solid fa-fire text-[9px]"></i>',
+                '免費接駁': '<i class="fa-solid fa-bus text-[9px]"></i>',
+                '商務中心': '<i class="fa-solid fa-briefcase text-[9px]"></i>',
+                'Spa': '<i class="fa-solid fa-spa text-[9px]"></i>'
+            };
+            return icons[amenity] || '<i class="fa-solid fa-circle-check text-[9px]"></i>';
+        }
+
+        function closeHotelDetail() {
+            selectedHotelId = null;
+            const panel = document.getElementById('hotel-detail-col');
+            if (panel) panel.classList.add('hidden');
+            renderAccommodationPage();
+        }
+
+        // 2. 結帳與付款 Modal 彈窗彈窗與付款檢查
+
+
+        function closeBookingModal() {
+            document.getElementById('booking-modal').classList.add('hidden');
+        }
+
+        // 付款處理與防重複衝突模擬
+
+
+
+
+
+
+        // 口袋收藏夾房源聯動 logic
+
+
+        // 口袋名單抽屜雙頁籤切換
+
+
+        // 重寫 openPocketDrawer
+        function openPocketDrawer() {
+            const drawer = document.getElementById('pocket-drawer');
+            if (drawer) drawer.style.width = "240px";
+            renderPocketDrawerContent();
+        }
+
+
+
+        // 浮動訊息Toast提示
+
+    </script>
+
+    <script>
+        // 網頁載入完成後，自動將按鈕與畫面注入到對應位置
+        document.addEventListener("DOMContentLoaded", function () {
+            // 1. 自動建立並插入左側「交通訂票」按鈕
+            const navMenu = document.querySelector('nav.space-y-1');
+            if (navMenu && !document.getElementById('nav-ticketing')) {
+                const ticketingBtn = document.createElement('button');
+                ticketingBtn.id = 'nav-ticketing';
+                ticketingBtn.setAttribute('onclick', "switchPage('ticketing')");
+                ticketingBtn.className = "w-full flex items-center space-x-3 px-4 py-3.5 rounded-xl font-medium transition text-left cursor-pointer text-gray-600 hover:bg-gray-50";
+                ticketingBtn.innerHTML = `
+    <i class="fa-solid fa-train-subway text-lg w-6 text-center"></i>
+    <span class="sidebar-text text-sm">交通訂票</span>
+`;
+                // 將按鈕完美安插在「會員專區」的上方
+                const memberBtn = document.getElementById('nav-member-center');
+                if (memberBtn) {
+                    navMenu.insertBefore(ticketingBtn, memberBtn);
+                } else {
+                    navMenu.appendChild(ticketingBtn);
+                }
+            }
+
+            // 2. 自動建立並插入右側「交通訂票主畫面」容器
+            const mainContent = document.querySelector('main.flex-1');
+            if (mainContent && !document.getElementById('page-ticketing')) {
+                const ticketingPage = document.createElement('section');
+                ticketingPage.id = 'page-ticketing';
+                ticketingPage.className = 'page-section hidden min-h-screen pb-24 animate-fade-in';
+                ticketingPage.innerHTML = `<div id="ticketing-main-container" class="max-w-6xl mx-auto p-4"></div>`;
+                mainContent.appendChild(ticketingPage);
+            }
+
+            // 3. 攔截系統原本的換頁邏輯，自動觸發訂票系統的 UI 渲染
+            if (typeof window.switchPage === 'function') {
+                const originalSwitchPage = window.switchPage;
+                window.switchPage = function (pageId) {
+                    originalSwitchPage(pageId); // 執行你原本的換頁與側邊欄反白邏輯
+
+                    // 如果切換到交通訂票，自動呼叫我們寫好的 UI 渲染引擎
+                    if (pageId === 'ticketing' && typeof window.renderTicketingPage === 'function') {
+                        window.renderTicketingPage();
+                    }
+                };
+            }
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const mainContainer = document.querySelector('main') || document.body;
+
+            // 1. 自動建立「行程編排與管理控制台」的獨立頁面（已移除，改為全面使用具備星榜行程操作的 page-create-trip）
+
+            // 3. 自動在首頁（Home）最下方補上：行程靈感、星榜行程、歷史紀錄卡片
+            const homePage = document.getElementById('page-home');
+            if (homePage && !document.getElementById('injected-home-inspiration-cards')) {
+                const extraBlocks = document.createElement('div');
+                extraBlocks.id = 'injected-home-inspiration-cards';
+                extraBlocks.className = 'mt-8 grid grid-cols-1 gap-6 border-t border-gray-200 pt-8 px-2';
+                extraBlocks.innerHTML = `
+            <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm space-y-3">
+                <h3 class="font-extrabold text-gray-800 text-base flex items-center gap-1.5"><i class="fa-solid fa-history text-gray-500"></i> 我的建立行程：歷史記錄</h3>
+                ${ItinerarySystem.db.historyTrips.map(ht => `
+                    <div onclick="ItinerarySystem.viewHistoryTripDetail('${ht.id}')" class="bg-gray-50 p-4 rounded-xl border border-gray-100 cursor-pointer hover:bg-gray-100 transition flex justify-between items-center">
+                        <div>
+                            <h4 class="font-bold text-gray-700 text-xs">${ht.name}</h4>
+                            <p class="text-[11px] text-gray-400 mt-1">出發日：${ht.date}</p>
+                        </div>
+                        <i class="fa-solid fa-folder-open text-gray-400"></i>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+                homePage.appendChild(extraBlocks);
+            }
+        });
+    </script>
+    <script>
+        // 1. 在登入畫面加入「管理員專屬登入」按鈕
+        window.addEventListener('DOMContentLoaded', (event) => {
+            setTimeout(() => {
+                const loginView = document.getElementById('view-login');
+                if (loginView) {
+                    const adminDiv = document.createElement('div');
+                    adminDiv.innerHTML = `
+                    <div class="mt-6 pt-5 border-t border-gray-200">
+                        <button onclick="handleAdminDirectLogin()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3.5 rounded-xl transition cursor-pointer shadow-md flex justify-center items-center">
+                            <i class="fa-solid fa-user-shield mr-2 text-amber-400"></i> 管理員專屬登入通道
+                        </button>
+                    </div>
+                `;
+                    loginView.appendChild(adminDiv);
+                }
+            }, 500);
+        });
+
+        // 2. 驗證密碼後，直接開啟妳做好的「管理員.html」
+        window.handleAdminDirectLogin = function () {
+            const pwd = prompt("🔐 系統安全驗證：\n請輸入管理員專屬密碼 (預設請輸入 admin)：");
+
+            if (pwd === "admin") {
+                // 設定管理員狀態並存檔
+                window.isLoggedIn = true;
+                window.currentUser = { name: "最高管理員", role: "admin" };
+                if (typeof AppPersistence !== 'undefined') AppPersistence.autoSave();
+
+                alert("✅ 驗證成功！即將為您導向專屬後台...");
+
+                // ✨ 魔法就在這行：直接把網頁導向妳原本寫好的檔案！
+                window.location.href = '管理員.html';
+            } else if (pwd !== null) {
+                alert("❌ 密碼錯誤，拒絕存取！");
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const today = new Date().toISOString().split('T')[0];
+            const dateInput = document.getElementById('input-trip-date');
+            if (dateInput) {
+                dateInput.value = today;
+            }
+        });
+    </script>
+</body>
+
+</html>
